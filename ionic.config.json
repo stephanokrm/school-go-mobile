@@ -1,0 +1,7 @@
+{
+  "name": "school-go",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
