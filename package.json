@@ -12,20 +12,30 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@capacitor/android": "5.0.0",
     "@capacitor/app": "5.0.0",
     "@capacitor/core": "5.0.0",
+    "@capacitor/google-maps": "^5.0.1",
     "@capacitor/haptics": "5.0.0",
     "@capacitor/keyboard": "5.0.0",
+    "@capacitor/push-notifications": "^5.0.1",
     "@capacitor/status-bar": "5.0.0",
+    "@hookform/resolvers": "^3.1.0",
     "@ionic/react": "^7.0.0",
     "@ionic/react-router": "^7.0.0",
+    "@tanstack/react-query": "^4.29.5",
     "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.3.3",
+    "axios": "^1.4.0",
+    "date-fns": "^2.30.0",
     "ionicons": "^7.0.0",
+    "libphonenumber-js": "^1.10.30",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.43.9",
     "react-router": "^5.3.4",
-    "react-router-dom": "^5.3.4"
+    "react-router-dom": "^5.3.4",
+    "yup": "^1.1.1"
   },
   "devDependencies": {
     "@capacitor/cli": "5.0.0",
@@ -40,6 +50,7 @@
     "eslint": "^8.35.0",
     "eslint-plugin-react": "^7.32.2",
     "jsdom": "^21.1.0",
+    "prettier": "^2.8.8",
     "typescript": "^4.9.3",
     "vite": "^4.1.0",
     "vitest": "^0.29.2"
