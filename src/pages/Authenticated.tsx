@@ -8,13 +8,14 @@ import {
   IonTabs,
 } from "@ionic/react";
 import { Redirect, Route } from "react-router-dom";
-import Tab1 from "./Tab1";
+import Home from "./Home";
 import Tab2 from "./Tab2";
 import { home, person } from "ionicons/icons";
-import { IonReactRouter } from "@ionic/react-router";
 import { PushNotifications, Token } from "@capacitor/push-notifications";
 import { useUserUpdateMutation } from "../hooks/useUserUpdateMutation";
 import { useGetUserByMeQuery } from "../hooks/useGetUserByMeQuery";
+import { useAuth } from "../hooks/useAuth";
+import Trip from "./Trip";
 
 interface AddPushNotificationsListeners {
   onRegistration: (token: Token) => unknown;
@@ -65,8 +66,12 @@ export const Authenticated: FC = () => {
   const { mutate } = useUserUpdateMutation();
   const { data: me } = useGetUserByMeQuery();
 
+  useAuth({ middleware: "auth" });
+
   const onRegistration = (token: Token) => {
     if (!me) return;
+
+    if (me.fcmToken === token.value) return;
 
     mutate({
       ...me,
@@ -78,33 +83,40 @@ export const Authenticated: FC = () => {
     addPushNotificationsListeners({
       onRegistration,
     }).then(registerPushNotifications);
+
+    return () => {
+      PushNotifications.removeAllListeners().then(() =>
+        console.log("removeAllListeners")
+      );
+    };
   }, []);
 
   return (
-    <IonReactRouter>
-      <IonTabs>
-        <IonRouterOutlet>
-          <Route exact path="/pagina-inicial">
-            <Tab1 />
-          </Route>
-          <Route exact path="/conta">
-            <Tab2 />
-          </Route>
-          <Route exact path="/">
-            <Redirect to="/pagina-inicial" />
-          </Route>
-        </IonRouterOutlet>
-        <IonTabBar slot="bottom">
-          <IonTabButton tab="tab1" href="/pagina-inicial">
-            <IonIcon aria-hidden="true" icon={home} />
-            <IonLabel>Página inicial</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab2" href="/conta">
-            <IonIcon aria-hidden="true" icon={person} />
-            <IonLabel>Conta</IonLabel>
-          </IonTabButton>
-        </IonTabBar>
-      </IonTabs>
-    </IonReactRouter>
+    <IonTabs>
+      <IonRouterOutlet>
+        <Route exact path="/pagina-inicial">
+          <Home />
+        </Route>
+        <Route exact path="/conta">
+          <Tab2 />
+        </Route>
+        <Route exact path="/viagem">
+          <Trip>Viagem</Trip>
+        </Route>
+        <Route exact path="/">
+          <Redirect to="/pagina-inicial" />
+        </Route>
+      </IonRouterOutlet>
+      <IonTabBar slot="bottom">
+        <IonTabButton tab="tab1" href="/pagina-inicial">
+          <IonIcon aria-hidden="true" icon={home} />
+          <IonLabel>Página inicial</IonLabel>
+        </IonTabButton>
+        <IonTabButton tab="tab2" href="/conta">
+          <IonIcon aria-hidden="true" icon={person} />
+          <IonLabel>Conta</IonLabel>
+        </IonTabButton>
+      </IonTabBar>
+    </IonTabs>
   );
 };

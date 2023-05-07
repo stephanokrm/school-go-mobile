@@ -5,7 +5,15 @@ import App from "./App";
 
 const container = document.getElementById("root");
 const root = createRoot(container!);
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+    },
+  },
+});
 
 root.render(
   <React.StrictMode>

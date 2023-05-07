@@ -22,6 +22,7 @@ import { FC } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { Authenticated } from "./pages/Authenticated";
 import { Unauthenticated } from "./pages/Unauthenticated";
+import { IonReactRouter } from "@ionic/react-router";
 
 setupIonicReact({
   mode: "ios",
@@ -33,7 +34,11 @@ const App: FC = () => {
   const isAuthenticated = !!user;
 
   return (
-    <IonApp>{isAuthenticated ? <Authenticated /> : <Unauthenticated />}</IonApp>
+    <IonApp>
+      <IonReactRouter>
+        {isAuthenticated ? <Authenticated /> : <Unauthenticated />}
+      </IonReactRouter>
+    </IonApp>
   );
 };
 

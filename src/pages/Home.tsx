@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from "react";
+import { FC, useState } from "react";
 import {
   IonCard,
   IonCardHeader,
@@ -17,16 +17,16 @@ import {
   SegmentChangeEventDetail,
 } from "@ionic/react";
 import { IonSegmentCustomEvent } from "@ionic/core";
-import "./Tab1.css";
 import { useAuth } from "../hooks/useAuth";
 import { RoleEnum } from "../enums/Role";
 import { Role } from "../components/Role";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { Clock } from "../components/Clock";
 import { useGreeting } from "../hooks/useGreeting";
-import { GoogleMap } from "@capacitor/google-maps";
+import { useHistory } from "react-router";
 
-const Tab1: FC = () => {
+const Home: FC = () => {
+  const history = useHistory();
   const { user } = useAuth({ middleware: "auth" });
   const [segment, setSegment] = useState(RoleEnum.Driver);
   const { label: greetingLabel, icon: greetingIcon } = useGreeting();
@@ -46,28 +46,6 @@ const Tab1: FC = () => {
 
     setSegment(event.detail.value as RoleEnum);
   };
-
-  const mapRef = useRef<HTMLElement>();
-
-  async function createMap() {
-    if (!mapRef.current) return;
-
-    console.log({ mapRef: mapRef.current });
-
-    await GoogleMap.create({
-      id: "my-cool-map",
-      element: mapRef.current,
-      apiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
-      forceCreate: true,
-      config: {
-        center: {
-          lat: 33.6,
-          lng: -117.9,
-        },
-        zoom: 8,
-      },
-    });
-  }
 
   return (
     <IonPage>
@@ -130,19 +108,11 @@ const Tab1: FC = () => {
             </IonCardSubtitle>
           </IonCardHeader>
         </IonCard>
-        <button onClick={createMap}>Create Map</button>
-        <capacitor-google-map
-          ref={mapRef}
-          style={{
-            display: "inline-block",
-            width: 275,
-            height: 400,
-          }}
-        ></capacitor-google-map>
+        <button onClick={() => history.push("/viagem")}>Trip</button>
         <Role role={isDriverAndResponsible ? segment : role} />
       </IonContent>
     </IonPage>
   );
 };
 
-export default Tab1;
+export default Home;

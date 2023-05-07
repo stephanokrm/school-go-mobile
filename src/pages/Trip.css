@@ -1,0 +1,7 @@
+ion-content {
+    --background: transparent;
+}
+
+html, body {
+    background: transparent;
+}

@@ -18,17 +18,14 @@ export const useAuth = ({
   const isSyncing = isLoading || isFetching;
 
   useEffect(() => {
-    if (
-      middleware === "guest" &&
-      redirectIfAuthenticated &&
-      user &&
-      !isSyncing
-    ) {
-      history.push(redirectIfAuthenticated);
+    if (isSyncing) return;
+
+    if (middleware === "guest" && user) {
+      return history.push("/pagina-inicial");
     }
 
-    if (middleware === "auth" && !user && !isSyncing) {
-      logout();
+    if (middleware === "auth" && !user) {
+      return logout();
     }
   }, [user, logout, middleware, redirectIfAuthenticated, history, isSyncing]);
 
