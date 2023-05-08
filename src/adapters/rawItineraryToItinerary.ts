@@ -17,7 +17,7 @@ export const rawItineraryToItinerary = async (
   friday: rawItinerary.friday,
   driver: await rawDriverToDriver(rawItinerary.driver),
   school: await rawSchoolToSchool(rawItinerary.school),
-  students: rawItinerary.students
+  students: Array.isArray(rawItinerary.students)
     ? await Promise.all(rawItinerary.students.map(rawStudentToStudent))
-    : [],
+    : undefined,
 });

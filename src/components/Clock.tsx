@@ -1,6 +1,8 @@
 import { FC, useEffect, useState } from "react";
 
-export const Clock: FC = () => {
+export const Clock: FC<{
+  options?: Intl.DateTimeFormatOptions;
+}> = ({ options }) => {
   const [today, setToday] = useState(new Date());
 
   useEffect(() => {
@@ -12,10 +14,11 @@ export const Clock: FC = () => {
   }, []);
 
   const displayTime = new Intl.DateTimeFormat("default", {
+    day: options?.day,
+    month: options?.month,
     hour: "numeric",
     minute: "numeric",
     second: "numeric",
-    hour12: false,
   }).format(today);
 
   return <>{displayTime}</>;

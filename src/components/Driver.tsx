@@ -1,8 +1,8 @@
-import { FC } from "react";
-import { useGetItinerariesQuery } from "../hooks/useGetItinerariesQuery";
+import { FC, useEffect } from "react";
 import {
   IonButton,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCardSubtitle,
   IonCardTitle,
@@ -10,15 +10,32 @@ import {
   IonText,
 } from "@ionic/react";
 import { busOutline } from "ionicons/icons";
+import { useGetTripsQuery } from "../hooks/useGetTripsQuery";
+import { Geolocation } from "@capacitor/geolocation";
+
+const registerGeolocation = async () => {
+  const permissionStatus = await Geolocation.checkPermissions();
+
+  if (
+    permissionStatus.location === "prompt" &&
+    (await Geolocation.requestPermissions()).location !== "granted"
+  ) {
+    throw new Error("User denied permissions!");
+  }
+};
 
 export const Driver: FC = () => {
-  const { data: itineraries = [] } = useGetItinerariesQuery({
+  const { data: trips = [] } = useGetTripsQuery({
     driver: true,
   });
 
+  useEffect(() => {
+    registerGeolocation();
+  }, []);
+
   return (
     <div>
-      {itineraries.length === 0 ? (
+      {trips.length === 0 ? (
         <div className="ion-padding">
           <div style={{ display: "flex", justifyContent: "center" }}>
             <IonIcon
@@ -29,21 +46,26 @@ export const Driver: FC = () => {
           </div>
           <div className="ion-margin-top">
             <IonText className="ion-text-center">
-              <h2 className="ion-no-margin">Nenhum itinerário para hoje</h2>
+              <h2 className="ion-no-margin">Nenhuma viagem hoje</h2>
             </IonText>
           </div>
         </div>
       ) : (
         <>
-          {itineraries.map((itinerary) => (
-            <IonCard>
+          {trips.map((trip) => (
+            <IonCard key={trip.id}>
               <IonCardHeader>
-                <IonCardTitle>{itinerary.school.name}</IonCardTitle>
+                <IonCardTitle>{trip.itinerary.school.name}</IonCardTitle>
                 <IonCardSubtitle>
-                  {itinerary.school.address.description}
+                  {trip.arriveAt.toLocaleTimeString()}
                 </IonCardSubtitle>
               </IonCardHeader>
-              <IonButton fill="clear">Começar</IonButton>
+              <IonCardContent>
+                {trip.itinerary.school.address.description}
+              </IonCardContent>
+              <IonButton fill="clear" routerLink="/viagem">
+                Começar
+              </IonButton>
             </IonCard>
           ))}
         </>

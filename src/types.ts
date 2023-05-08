@@ -1,24 +1,7 @@
 // COMMON
 
-import * as yup from "yup";
 import { AxiosError } from "axios";
 import { RoleEnum } from "./enums/Role";
-// import {
-//   driverCreateSchema,
-//   driverEditSchema,
-//   itineraryCreateSchema,
-//   itineraryEditSchema,
-//   loginSchema,
-//   passwordResetFormSchema,
-//   responsibleCreateSchema,
-//   responsibleEditSchema,
-//   schoolCreateSchema,
-//   schoolEditSchema,
-//   studentCreateSchema,
-//   studentEditSchema,
-//   userCreateSchema,
-//   userEditSchema,
-// } from "./schemas";
 
 export type Resource<T> = {
   data: T;
@@ -45,7 +28,7 @@ export type RawUser = {
   email: string;
   email_verified_at: string | null;
   cell_phone: string;
-  fcm_token?: string;
+  fcm_token: string | null;
   password: string;
   password_confirmation: string | null;
   created_at: string | null;
@@ -200,27 +183,28 @@ export type Itinerary = {
   students?: Student[];
 };
 
-// FIELD VALUES
+export type RawTrip = {
+  id: number;
+  arrive_at: string;
+  latitude: number | null;
+  longitude: number | null;
+  started_at: string | null;
+  finished_at: string | null;
+  itinerary: RawItinerary;
+  created_at: string;
+  updated_at: string | null;
+  students: RawStudent[] | null;
+};
 
-// export type LoginForm = yup.InferType<typeof loginSchema>;
-// export type PasswordResetForm = yup.InferType<typeof passwordResetFormSchema>;
-//
-// export type ItineraryCreateForm = yup.InferType<typeof itineraryCreateSchema>;
-// export type ItineraryEditForm = yup.InferType<typeof itineraryEditSchema>;
-//
-// export type DriverCreateForm = yup.InferType<typeof driverCreateSchema>;
-// export type DriverEditForm = yup.InferType<typeof driverEditSchema>;
-//
-// export type ResponsibleCreateForm = yup.InferType<
-//   typeof responsibleCreateSchema
-// >;
-// export type ResponsibleEditForm = yup.InferType<typeof responsibleEditSchema>;
-//
-// export type SchoolCreateForm = yup.InferType<typeof schoolCreateSchema>;
-// export type SchoolEditForm = yup.InferType<typeof schoolEditSchema>;
-//
-// export type StudentCreateForm = yup.InferType<typeof studentCreateSchema>;
-// export type StudentEditForm = yup.InferType<typeof studentEditSchema>;
-//
-// export type UserCreateForm = yup.InferType<typeof userCreateSchema>;
-// export type UserEditForm = yup.InferType<typeof userEditSchema>;
+export type Trip = {
+  id: number;
+  arriveAt: Date;
+  latitude?: number;
+  longitude?: number;
+  startedAt?: Date;
+  finishedAt?: Date;
+  itinerary: Itinerary;
+  createdAt: Date;
+  updatedAt?: Date;
+  students?: Student[];
+};

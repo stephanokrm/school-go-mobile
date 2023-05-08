@@ -26,7 +26,6 @@ import { useGreeting } from "../hooks/useGreeting";
 import { useHistory } from "react-router";
 
 const Home: FC = () => {
-  const history = useHistory();
   const { user } = useAuth({ middleware: "auth" });
   const [segment, setSegment] = useState(RoleEnum.Driver);
   const { label: greetingLabel, icon: greetingIcon } = useGreeting();
@@ -54,14 +53,20 @@ const Home: FC = () => {
           {isDriverAndResponsible ? (
             <IonSegment value={segment} onIonChange={onSegmentChange}>
               <IonSegmentButton value={RoleEnum.Driver}>
-                <IonLabel>Motorista</IonLabel>
+                <IonLabel>
+                  Motorista - <Clock />
+                </IonLabel>
               </IonSegmentButton>
               <IonSegmentButton value={RoleEnum.Responsible}>
-                <IonLabel>Responsável</IonLabel>
+                <IonLabel>
+                  Responsável - <Clock />
+                </IonLabel>
               </IonSegmentButton>
             </IonSegment>
           ) : (
-            <IonTitle>{role}</IonTitle>
+            <IonTitle>
+              {role} - <Clock />
+            </IonTitle>
           )}
         </IonToolbar>
       </IonHeader>
@@ -104,11 +109,10 @@ const Home: FC = () => {
               </div>
             </IonCardTitle>
             <IonCardSubtitle>
-              <Clock />
+              <Clock options={{ day: "numeric", month: "short" }} />
             </IonCardSubtitle>
           </IonCardHeader>
         </IonCard>
-        <button onClick={() => history.push("/viagem")}>Trip</button>
         <Role role={isDriverAndResponsible ? segment : role} />
       </IonContent>
     </IonPage>
