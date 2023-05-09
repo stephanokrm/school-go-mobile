@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useGetUserByMeQuery } from "./useGetUserByMeQuery";
 import { useLogoutMutation } from "./useLogoutMutation";
-import { useHistory } from "react-router";
+import { useIonRouter } from "@ionic/react";
 
 interface UseAuth {
   middleware?: "auth" | "guest";
@@ -11,7 +11,7 @@ export const useAuth = ({
   middleware,
   redirectIfAuthenticated,
 }: UseAuth = {}) => {
-  const history = useHistory();
+  const router = useIonRouter();
   const { data: user, isLoading, isFetching } = useGetUserByMeQuery();
   const { mutate: logout } = useLogoutMutation();
 
@@ -21,7 +21,7 @@ export const useAuth = ({
     if (isSyncing) return;
 
     if (middleware === "guest" && user) {
-      return history.push("/pagina-inicial");
+      return router.push("/pagina-inicial");
     }
 
     if (middleware === "auth" && !user) {
