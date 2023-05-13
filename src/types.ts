@@ -88,11 +88,15 @@ export interface RawAddress {
   description: string;
   place_id: string;
   structured_formatting?: StructuredFormatting;
+  latitude?: number;
+  longitude?: number;
 }
 
 export type Address = {
   description: string;
   place: string;
+  latitude: number;
+  longitude: number;
 };
 
 export type RawSchool = {
@@ -137,6 +141,10 @@ export type RawStudent = {
   address: RawAddress;
   responsible: RawResponsible;
   school: RawSchool;
+  pivot: {
+    order: number;
+    embarked_at: string | null;
+  } | null;
 };
 
 export type Student = {
@@ -151,6 +159,10 @@ export type Student = {
   address: Address;
   responsible: Responsible;
   school: School;
+  pivot?: {
+    order: number;
+    embarkedAt?: Date;
+  };
 };
 
 export type RawItinerary = {
@@ -183,8 +195,11 @@ export type Itinerary = {
   students?: Student[];
 };
 
+type Path = { lat: number; lng: number };
+
 export type RawTrip = {
   id: number;
+  path: Path[];
   arrive_at: string;
   latitude: number | null;
   longitude: number | null;
@@ -198,6 +213,7 @@ export type RawTrip = {
 
 export type Trip = {
   id: number;
+  path: Path[];
   arriveAt: Date;
   latitude?: number;
   longitude?: number;

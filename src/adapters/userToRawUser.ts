@@ -9,7 +9,7 @@ export const userToRawUser = async (user: User): Promise<RawUser> => ({
   email: user.email,
   email_verified_at: user.emailVerifiedAt?.toISOString() ?? null,
   cell_phone: parsePhoneNumber(user.cellPhone, "BR").number,
-  fcm_token: user.fcmToken,
+  fcm_token: user.fcmToken ?? null,
   password: user.password,
   password_confirmation: user.passwordConfirmation ?? null,
   created_at: user.createdAt?.toISOString() ?? null,

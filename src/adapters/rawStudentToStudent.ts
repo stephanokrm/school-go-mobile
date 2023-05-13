@@ -2,6 +2,7 @@ import { RawStudent, Student } from "../types";
 import { rawAddressToAddress } from "./rawAddressToAddress";
 import { rawResponsibleToResponsible } from "./rawResponsibleToResponsible";
 import { rawSchoolToSchool } from "./rawSchoolToSchool";
+import { parseISO } from "date-fns";
 
 export const rawStudentToStudent = async (
   rawStudent: RawStudent
@@ -17,4 +18,12 @@ export const rawStudentToStudent = async (
   address: await rawAddressToAddress(rawStudent.address),
   responsible: await rawResponsibleToResponsible(rawStudent.responsible),
   school: await rawSchoolToSchool(rawStudent.school),
+  pivot: rawStudent.pivot
+    ? {
+        order: rawStudent.pivot.order,
+        embarkedAt: rawStudent.pivot.embarked_at
+          ? parseISO(rawStudent.pivot.embarked_at)
+          : undefined,
+      }
+    : undefined,
 });

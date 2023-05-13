@@ -12,7 +12,7 @@ export const rawUserToUser = async (rawUser: RawUser): Promise<User> => ({
     ? parseISO(rawUser.email_verified_at)
     : undefined,
   cellPhone: parsePhoneNumber(rawUser.cell_phone, "BR").formatNational(),
-  fcmToken: rawUser.fcm_token,
+  fcmToken: rawUser.fcm_token ?? undefined,
   password: rawUser.password ?? undefined,
   passwordConfirmation: rawUser.password_confirmation ?? undefined,
   createdAt: rawUser.created_at ? parseISO(rawUser.created_at) : undefined,

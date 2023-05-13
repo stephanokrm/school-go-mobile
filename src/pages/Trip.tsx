@@ -1,10 +1,4 @@
-import React, {
-  FC,
-  PropsWithChildren,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import {
   IonModal,
   IonHeader,
@@ -15,31 +9,255 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  IonAvatar,
-  IonImg,
-  IonSearchbar,
   IonButtons,
   IonBackButton,
   useIonViewDidEnter,
   useIonViewWillLeave,
+  IonFab,
+  IonFabButton,
+  IonIcon,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+  IonChip,
+  IonSpinner,
 } from "@ionic/react";
+import { add, remove, checkmarkCircle, arrowForward } from "ionicons/icons";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation, CallbackID } from "@capacitor/geolocation";
 import "./Trip.css";
+import { RouteComponentProps } from "react-router";
+import { useTripByIdQuery } from "../hooks/useTripByIdQuery";
+import { useTripUpdateMutation } from "../hooks/useTripUpdateMutation";
+import { useWindowDimensions } from "../hooks/useWindowDimensions";
 
-const Trip: FC<PropsWithChildren> = ({ children }) => {
+interface TripProps extends RouteComponentProps<{ id: string }> {}
+
+const Trip: FC<TripProps> = ({ match }) => {
   const watchRef = useRef<CallbackID>();
   const mapRef = useRef<HTMLElement>();
   const googleMapRef = useRef<GoogleMap>();
-  const markerRef = useRef<string>();
-  const zoomRef = useRef<number>(15);
+  const driverMarkerRef = useRef<string>();
+  const destinationMarkerRef = useRef<string>();
+  const studentMarkersRef = useRef<string[]>([]);
+  const zoomRef = useRef<number>(18);
   const modal = useRef<HTMLIonModalElement>(null);
-  const [isReady, setIsReady] = useState(false);
+  const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
+
+  const { height } = useWindowDimensions();
+  const {
+    data: trip,
+    isLoading,
+    isRefetching,
+  } = useTripByIdQuery(match.params.id, {
+    refetchInterval: 10000,
+  });
+  const { mutate: update, isLoading: isUpdatingTrip } = useTripUpdateMutation();
+
+  const isLoadingTrip = isLoading || isRefetching || isUpdatingTrip;
+  const path = trip?.path;
+  const students = trip?.students;
+  const latitude = trip?.latitude;
+  const longitude = trip?.longitude;
+  const destination = trip?.itinerary?.school?.address;
+
+  useEffect(() => {
+    if (!isGoogleMapCreated) return;
+
+    const addMarker = async () => {
+      if (!googleMapRef.current || !latitude || !longitude) return;
+
+      if (driverMarkerRef.current) {
+        await googleMapRef.current.removeMarker(driverMarkerRef.current);
+      }
+
+      driverMarkerRef.current = await googleMapRef.current.addMarker({
+        coordinate: {
+          lat: latitude,
+          lng: longitude,
+        },
+        iconUrl: "bus.png",
+        iconSize: {
+          width: zoomRef.current * 3,
+          height: zoomRef.current * 3,
+        },
+      });
+    };
+
+    addMarker();
+  }, [latitude, longitude, isGoogleMapCreated]);
+
+  useEffect(() => {
+    const start = async () => {
+      if (trip && !trip.startedAt) {
+        update({
+          ...trip,
+          startedAt: new Date(),
+        });
+      }
+    };
+    const watchPosition = async () => {
+      if (!trip) return;
+
+      if (watchRef.current) {
+        await Geolocation.clearWatch({ id: watchRef.current });
+      }
+
+      watchRef.current = await Geolocation.watchPosition(
+        {
+          enableHighAccuracy: true,
+        },
+        (position) => {
+          if (!position) return;
+
+          if (
+            trip.longitude !== position.coords.longitude ||
+            trip.latitude !== position.coords.latitude
+          ) {
+            update({
+              ...trip,
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          }
+        }
+      );
+    };
+
+    start();
+    watchPosition();
+  }, [trip]);
+
+  useEffect(() => {
+    if (!isGoogleMapCreated) return;
+
+    const setPadding = async () => {
+      if (!googleMapRef.current) return;
+
+      await googleMapRef.current.setPadding({
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: height * 0.25,
+      });
+    };
+
+    setPadding();
+  }, [height, isGoogleMapCreated]);
+
+  useEffect(() => {
+    if (!isGoogleMapCreated) return;
+
+    const addPolylines = async () => {
+      if (!googleMapRef.current || !path) return;
+
+      googleMapRef.current.addPolylines([
+        {
+          strokeColor: "#ffc409",
+          strokeWeight: 15,
+          path,
+        },
+      ]);
+    };
+
+    addPolylines();
+  }, [path, isGoogleMapCreated]);
+
+  useEffect(() => {
+    if (!isGoogleMapCreated) return;
+
+    const addMarkers = async () => {
+      if (!googleMapRef.current || !students) return;
+
+      if (studentMarkersRef.current.length > 0) {
+        await googleMapRef.current.removeMarkers(studentMarkersRef.current);
+      }
+
+      const markers = students
+        .filter((student) => !student.pivot?.embarkedAt)
+        .map((student) => ({
+          coordinate: {
+            lat: student.address.latitude,
+            lng: student.address.longitude,
+          },
+          iconSize: {
+            width: zoomRef.current,
+            height: zoomRef.current,
+          },
+        }));
+
+      studentMarkersRef.current = await googleMapRef.current.addMarkers(
+        markers
+      );
+    };
+
+    addMarkers();
+  }, [students, isGoogleMapCreated]);
+
+  useEffect(() => {
+    if (!isGoogleMapCreated) return;
+
+    const addMarker = async () => {
+      if (!googleMapRef.current || !destination) return;
+
+      if (destinationMarkerRef.current) {
+        await googleMapRef.current.removeMarker(destinationMarkerRef.current);
+      }
+
+      destinationMarkerRef.current = await googleMapRef.current.addMarker({
+        coordinate: {
+          lat: destination.latitude,
+          lng: destination.longitude,
+        },
+        iconSize: {
+          width: zoomRef.current,
+          height: zoomRef.current,
+        },
+      });
+    };
+
+    addMarker();
+  }, [destination, isGoogleMapCreated]);
+
+  const removeZoom = async () => {
+    if (!googleMapRef.current) return;
+
+    const zoom = zoomRef.current - 1;
+
+    zoomRef.current = zoom;
+
+    await googleMapRef.current.setCamera({
+      animate: true,
+      zoom,
+    });
+  };
+
+  const addZoom = async () => {
+    if (!googleMapRef.current) return;
+
+    const zoom = zoomRef.current + 1;
+
+    zoomRef.current = zoom;
+
+    await googleMapRef.current.setCamera({
+      animate: true,
+      zoom,
+    });
+  };
+
+  const cleanUp = async () => {
+    await googleMapRef.current?.destroy();
+    await modal.current?.dismiss();
+
+    if (!watchRef.current) return;
+
+    await Geolocation.clearWatch({ id: watchRef.current });
+  };
 
   const loadMap = async () => {
     if (!mapRef.current) return;
 
-    const position = await Geolocation.getCurrentPosition({
+    const currentPosition = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
     });
 
@@ -49,351 +267,30 @@ const Trip: FC<PropsWithChildren> = ({ children }) => {
       apiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
       config: {
         center: {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+          lat: currentPosition.coords.latitude,
+          lng: currentPosition.coords.longitude,
         },
         zoom: zoomRef.current,
       },
     });
 
-    googleMapRef.current?.addPolylines([
-      {
-        path: [
-          {
-            lat: -29.910310000000003,
-            lng: -51.166070000000005,
-          },
-          {
-            lat: -29.910320000000002,
-            lng: -51.165960000000005,
-          },
-          {
-            lat: -29.910370000000004,
-            lng: -51.16574000000001,
-          },
-          {
-            lat: -29.910490000000003,
-            lng: -51.16536000000001,
-          },
-          {
-            lat: -29.91052,
-            lng: -51.16532,
-          },
-          {
-            lat: -29.91053,
-            lng: -51.16527000000001,
-          },
-          {
-            lat: -29.913680000000003,
-            lng: -51.165670000000006,
-          },
-          {
-            lat: -29.915010000000002,
-            lng: -51.16586,
-          },
-          {
-            lat: -29.91664,
-            lng: -51.16606,
-          },
-          {
-            lat: -29.91719,
-            lng: -51.16613,
-          },
-          {
-            lat: -29.917370000000002,
-            lng: -51.1662,
-          },
-          {
-            lat: -29.91738,
-            lng: -51.16624,
-          },
-          {
-            lat: -29.917410000000004,
-            lng: -51.16630000000001,
-          },
-          {
-            lat: -29.917460000000002,
-            lng: -51.16635,
-          },
-          {
-            lat: -29.91757,
-            lng: -51.1664,
-          },
-          {
-            lat: -29.91767,
-            lng: -51.166360000000005,
-          },
-          {
-            lat: -29.917710000000003,
-            lng: -51.16633,
-          },
-          {
-            lat: -29.917730000000002,
-            lng: -51.16630000000001,
-          },
-          {
-            lat: -29.917820000000003,
-            lng: -51.16628000000001,
-          },
-          {
-            lat: -29.9189,
-            lng: -51.16637000000001,
-          },
-          {
-            lat: -29.919900000000002,
-            lng: -51.16646,
-          },
-          {
-            lat: -29.920900000000003,
-            lng: -51.16651,
-          },
-          {
-            lat: -29.923450000000003,
-            lng: -51.1668,
-          },
-          {
-            lat: -29.924680000000002,
-            lng: -51.166900000000005,
-          },
-          {
-            lat: -29.92462,
-            lng: -51.16725,
-          },
-          {
-            lat: -29.924450000000004,
-            lng: -51.16814,
-          },
-          {
-            lat: -29.924280000000003,
-            lng: -51.169000000000004,
-          },
-          {
-            lat: -29.924170000000004,
-            lng: -51.16953,
-          },
-          {
-            lat: -29.924640000000004,
-            lng: -51.16957000000001,
-          },
-          {
-            lat: -29.92593,
-            lng: -51.169650000000004,
-          },
-          {
-            lat: -29.927030000000002,
-            lng: -51.16971,
-          },
-          {
-            lat: -29.92752,
-            lng: -51.169720000000005,
-          },
-          {
-            lat: -29.92751,
-            lng: -51.17033000000001,
-          },
-          {
-            lat: -29.928410000000003,
-            lng: -51.17033000000001,
-          },
-          {
-            lat: -29.930300000000003,
-            lng: -51.170390000000005,
-          },
-          {
-            lat: -29.931870000000004,
-            lng: -51.170460000000006,
-          },
-          {
-            lat: -29.932050000000004,
-            lng: -51.17047,
-          },
-          {
-            lat: -29.932440000000003,
-            lng: -51.17049,
-          },
-          {
-            lat: -29.932470000000002,
-            lng: -51.171220000000005,
-          },
-          {
-            lat: -29.93249,
-            lng: -51.17168,
-          },
-          {
-            lat: -29.932560000000002,
-            lng: -51.17338,
-          },
-          {
-            lat: -29.93268,
-            lng: -51.17627,
-          },
-          {
-            lat: -29.932730000000003,
-            lng: -51.17734,
-          },
-          {
-            lat: -29.932430000000004,
-            lng: -51.17736000000001,
-          },
-          {
-            lat: -29.932260000000003,
-            lng: -51.17736000000001,
-          },
-          {
-            lat: -29.93099,
-            lng: -51.177420000000005,
-          },
-          {
-            lat: -29.929180000000002,
-            lng: -51.177510000000005,
-          },
-          {
-            lat: -29.926450000000003,
-            lng: -51.177620000000005,
-          },
-          {
-            lat: -29.926250000000003,
-            lng: -51.17759,
-          },
-          {
-            lat: -29.926090000000002,
-            lng: -51.177550000000004,
-          },
-          {
-            lat: -29.92603,
-            lng: -51.177240000000005,
-          },
-          {
-            lat: -29.925950000000004,
-            lng: -51.17696,
-          },
-          {
-            lat: -29.925720000000002,
-            lng: -51.17649,
-          },
-          {
-            lat: -29.92537,
-            lng: -51.176,
-          },
-          {
-            lat: -29.9249,
-            lng: -51.175360000000005,
-          },
-          {
-            lat: -29.924310000000002,
-            lng: -51.174510000000005,
-          },
-          {
-            lat: -29.924110000000002,
-            lng: -51.174310000000006,
-          },
-          {
-            lat: -29.923910000000003,
-            lng: -51.174170000000004,
-          },
-          {
-            lat: -29.922850000000004,
-            lng: -51.173480000000005,
-          },
-          {
-            lat: -29.92256,
-            lng: -51.173230000000004,
-          },
-          {
-            lat: -29.92237,
-            lng: -51.173,
-          },
-          {
-            lat: -29.92227,
-            lng: -51.172850000000004,
-          },
-          {
-            lat: -29.922200000000004,
-            lng: -51.17269,
-          },
-          {
-            lat: -29.92142,
-            lng: -51.170030000000004,
-          },
-          {
-            lat: -29.920930000000002,
-            lng: -51.168260000000004,
-          },
-          {
-            lat: -29.920880000000004,
-            lng: -51.16805,
-          },
-          {
-            lat: -29.92086,
-            lng: -51.16787000000001,
-          },
-          {
-            lat: -29.92086,
-            lng: -51.167840000000005,
-          },
-        ],
-      },
-    ]);
-
-    googleMapRef.current?.setOnBoundsChangedListener(
+    await googleMapRef.current.enableCurrentLocation(true);
+    await googleMapRef.current.setOnBoundsChangedListener(
       (event) => (zoomRef.current = event.zoom)
     );
 
-    watchRef.current = await Geolocation.watchPosition(
-      {
-        enableHighAccuracy: true,
-      },
-      (position) => {
-        if (!googleMapRef.current || !position) return;
-
-        googleMapRef.current?.setCamera({
-          animate: true,
-          zoom: zoomRef.current,
-          coordinate: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          },
-        });
-
-        if (markerRef.current) {
-          googleMapRef.current?.removeMarker(markerRef.current);
-        }
-
-        googleMapRef.current
-          ?.addMarker({
-            coordinate: {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            },
-            iconUrl: "bus.png",
-            iconSize: {
-              width: zoomRef.current * 5,
-              height: zoomRef.current * 5,
-            },
-          })
-          .then((marker) => (markerRef.current = marker));
-      }
-    );
+    setIsGoogleMapCreated(true);
   };
 
-  useIonViewDidEnter(() => setIsReady(true));
+  useIonViewDidEnter(loadMap);
 
-  useIonViewWillLeave(() => {
-    googleMapRef.current?.destroy();
-    modal.current?.dismiss();
-
-    if (!watchRef.current) return;
-
-    Geolocation.clearWatch({
-      id: watchRef.current,
-    }).then(() => console.log("Clear Watch"));
-  });
+  useIonViewWillLeave(cleanUp);
 
   useEffect(() => {
-    if (!isReady) return;
-
-    loadMap();
-  }, [isReady]);
+    return () => {
+      cleanUp();
+    };
+  }, []);
 
   return (
     <IonPage>
@@ -406,68 +303,96 @@ const Trip: FC<PropsWithChildren> = ({ children }) => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        {isReady && (
-          <capacitor-google-map
-            ref={mapRef}
-            style={{
-              display: "inline-block",
-              width: "100%",
-              height: "70vh",
-            }}
-          />
-        )}
+        <capacitor-google-map
+          ref={mapRef}
+          style={{
+            display: "inline-block",
+            width: "100%",
+            height: "100vh",
+          }}
+        />
+        <IonFab slot="fixed" vertical="center" horizontal="start">
+          <IonFabButton size="small" onClick={removeZoom}>
+            <IonIcon icon={remove} />
+          </IonFabButton>
+        </IonFab>
+        <IonFab slot="fixed" vertical="center" horizontal="end">
+          <IonFabButton size="small" onClick={addZoom}>
+            <IonIcon icon={add} />
+          </IonFabButton>
+        </IonFab>
         <IonModal
-          ref={modal}
-          trigger="open-modal"
-          isOpen={true}
-          initialBreakpoint={0.25}
-          breakpoints={[0.25, 0.5, 0.75]}
-          backdropDismiss={false}
           backdropBreakpoint={0.5}
+          backdropDismiss={false}
+          breakpoints={[0.25, 0.5, 0.75]}
+          initialBreakpoint={0.25}
+          isOpen
+          ref={modal}
         >
           <IonContent className="ion-padding">
-            <IonSearchbar
-              onClick={() => modal.current?.setCurrentBreakpoint(0.75)}
-              placeholder="Search"
-            ></IonSearchbar>
-            {children}
             <IonList>
-              <IonItem>
-                <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=b" />
-                </IonAvatar>
-                <IonLabel>
-                  <h2>Connor Smith</h2>
-                  <p>Sales Rep</p>
-                </IonLabel>
-              </IonItem>
-              <IonItem>
-                <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=a" />
-                </IonAvatar>
-                <IonLabel>
-                  <h2>Daniel Smith</h2>
-                  <p>Product Designer</p>
-                </IonLabel>
-              </IonItem>
-              <IonItem>
-                <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=d" />
-                </IonAvatar>
-                <IonLabel>
-                  <h2>Greg Smith</h2>
-                  <p>Director of Operations</p>
-                </IonLabel>
-              </IonItem>
-              <IonItem>
-                <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=e" />
-                </IonAvatar>
-                <IonLabel>
-                  <h2>Zoey Smith</h2>
-                  <p>CEO</p>
-                </IonLabel>
-              </IonItem>
+              {students?.map((student, index) => (
+                <IonItemSliding
+                  disabled={index > 0 || !!student?.pivot?.embarkedAt}
+                  onIonDrag={(event) => {
+                    if (event.detail.ratio < -2 && trip) {
+                      const syncStudents = [...students];
+                      const pivot = student.pivot
+                        ? {
+                            ...student.pivot,
+                            embarkedAt: new Date(),
+                          }
+                        : undefined;
+
+                      syncStudents[index] = {
+                        ...student,
+                        pivot,
+                      };
+
+                      update({
+                        ...trip,
+                        students: syncStudents,
+                      });
+
+                      event.target.close();
+                    }
+                  }}
+                >
+                  <IonItemOptions side="start">
+                    <IonItemOption expandable>Embarcou</IonItemOption>
+                  </IonItemOptions>
+                  <IonItem>
+                    {index === 0 && !student.pivot?.embarkedAt ? (
+                      isLoadingTrip ? (
+                        <IonSpinner slot="start" color="primary" />
+                      ) : (
+                        <IonIcon
+                          icon={arrowForward}
+                          color="primary"
+                          slot="start"
+                        />
+                      )
+                    ) : null}
+                    <IonLabel>
+                      <h2>
+                        {student.firstName} {student.lastName}
+                      </h2>
+                      <p>{student.address.description}</p>
+                    </IonLabel>
+                    {!!student?.pivot?.embarkedAt ? (
+                      <IonIcon
+                        icon={checkmarkCircle}
+                        color="primary"
+                        slot="end"
+                      />
+                    ) : (
+                      <IonChip slot="end" color="primary">
+                        {student.pivot?.order}º
+                      </IonChip>
+                    )}
+                  </IonItem>
+                </IonItemSliding>
+              ))}
             </IonList>
           </IonContent>
         </IonModal>

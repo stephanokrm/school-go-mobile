@@ -5,4 +5,6 @@ export const rawAddressToAddress = async (
 ): Promise<Address> => ({
   description: address.description,
   place: address.place_id,
+  latitude: address.latitude ?? 0,
+  longitude: address.longitude ?? 0,
 });

@@ -100,9 +100,7 @@ export const Authenticated: FC = () => {
         <Route exact path="/conta">
           <Tab2 />
         </Route>
-        <Route exact path="/viagem">
-          <Trip>Viagem</Trip>
-        </Route>
+        <Route exact path="/viagem/:id" component={Trip} />
         <Route exact path="/">
           <Redirect to="/pagina-inicial" />
         </Route>
