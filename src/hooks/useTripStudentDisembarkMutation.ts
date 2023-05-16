@@ -9,16 +9,16 @@ type Data = {
   student: Student;
 };
 
-export const useTripStudentEmbarkMutation = () => {
+export const useTripStudentDisembarkMutation = () => {
   const queryClient = useQueryClient();
 
   useCsrfQuery();
 
   return useMutation<Response, BackendError, Data>(
-    ["TripStudentEmbark"],
+    ["TripStudentDisembark"],
     async ({ trip, student }) => {
       const { data } = await axios.post<Response>(
-        `/api/trip/${trip.id}/student/${student.id}/embark`,
+        `/api/trip/${trip.id}/student/${student.id}/disembark`,
         {
           _method: "PUT",
         }

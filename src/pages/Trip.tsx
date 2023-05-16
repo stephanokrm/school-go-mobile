@@ -37,6 +37,7 @@ import { useTripByIdQuery } from "../hooks/useTripByIdQuery";
 import { useTripUpdateMutation } from "../hooks/useTripUpdateMutation";
 import { useWindowDimensions } from "../hooks/useWindowDimensions";
 import { useTripStudentEmbarkMutation } from "../hooks/useTripStudentEmbarkMutation";
+import { useTripStudentDisembarkMutation } from "../hooks/useTripStudentDisembarkMutation";
 
 interface TripProps extends RouteComponentProps<{ id: string }> {}
 
@@ -58,6 +59,7 @@ const Trip: FC<TripProps> = ({ match }) => {
   });
   const { mutate: update } = useTripUpdateMutation();
   const { mutate: embark } = useTripStudentEmbarkMutation();
+  const { mutate: disembark } = useTripStudentDisembarkMutation();
 
   const path = trip?.path;
   const round = trip?.round;
@@ -381,14 +383,18 @@ const Trip: FC<TripProps> = ({ match }) => {
                   disabled={index > 0 || !!student?.pivot?.embarkedAt}
                   onIonDrag={(event) => {
                     if (event.detail.ratio < -2 && trip) {
-                      embark({ trip, student });
+                      round
+                        ? disembark({ trip, student })
+                        : embark({ trip, student });
 
                       event.target.close();
                     }
                   }}
                 >
                   <IonItemOptions side="start">
-                    <IonItemOption expandable>Embarcou</IonItemOption>
+                    <IonItemOption expandable>
+                      {round ? "Desembarcou" : "Embarcou"}
+                    </IonItemOption>
                   </IonItemOptions>
                   <IonItem>
                     {index === 0 && !student.pivot?.embarkedAt ? (
