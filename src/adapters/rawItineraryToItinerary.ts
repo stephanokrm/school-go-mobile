@@ -2,6 +2,7 @@ import { RawItinerary, Itinerary } from "../types";
 import { rawDriverToDriver } from "./rawDriverToDriver";
 import { rawSchoolToSchool } from "./rawSchoolToSchool";
 import { rawStudentToStudent } from "./rawStudentToStudent";
+import { rawAddressToAddress } from "./rawAddressToAddress";
 
 export const rawItineraryToItinerary = async (
   rawItinerary: RawItinerary
@@ -15,6 +16,7 @@ export const rawItineraryToItinerary = async (
   wednesday: rawItinerary.wednesday,
   thursday: rawItinerary.thursday,
   friday: rawItinerary.friday,
+  address: await rawAddressToAddress(rawItinerary.address),
   driver: await rawDriverToDriver(rawItinerary.driver),
   school: await rawSchoolToSchool(rawItinerary.school),
   students: Array.isArray(rawItinerary.students)

@@ -48,7 +48,7 @@ const Trip: FC<TripProps> = ({ match }) => {
   const destinationMarkerRef = useRef<string>();
   const studentMarkersRef = useRef<string[]>([]);
   const zoomRef = useRef<number>(18);
-  const modal = useRef<HTMLIonModalElement>(null);
+  const modalRef = useRef<HTMLIonModalElement>(null);
   const router = useIonRouter();
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
@@ -60,10 +60,15 @@ const Trip: FC<TripProps> = ({ match }) => {
   const { mutate: embark } = useTripStudentEmbarkMutation();
 
   const path = trip?.path;
+  const round = trip?.round;
+  const destination = trip?.itinerary?.school;
+  const destinationName = round ? "Pátio" : destination?.name;
+  const destinationAddress = round
+    ? trip?.itinerary?.address
+    : destination?.address;
   const students = trip?.students;
   const latitude = trip?.latitude;
   const longitude = trip?.longitude;
-  const destination = trip?.itinerary?.school;
   const completedAllStops = students?.every(
     (student) => !!student.pivot?.embarkedAt
   );
@@ -205,7 +210,7 @@ const Trip: FC<TripProps> = ({ match }) => {
     if (!isGoogleMapCreated) return;
 
     const addMarker = async () => {
-      if (!googleMapRef.current || !destination) return;
+      if (!googleMapRef.current || !destinationAddress) return;
 
       if (destinationMarkerRef.current) {
         await googleMapRef.current.removeMarker(destinationMarkerRef.current);
@@ -213,8 +218,8 @@ const Trip: FC<TripProps> = ({ match }) => {
 
       destinationMarkerRef.current = await googleMapRef.current.addMarker({
         coordinate: {
-          lat: destination.address.latitude,
-          lng: destination.address.longitude,
+          lat: destinationAddress.latitude,
+          lng: destinationAddress.longitude,
         },
         iconSize: {
           width: zoomRef.current,
@@ -224,7 +229,7 @@ const Trip: FC<TripProps> = ({ match }) => {
     };
 
     addMarker();
-  }, [destination, isGoogleMapCreated]);
+  }, [destinationAddress, isGoogleMapCreated]);
 
   const removeZoom = async () => {
     if (!googleMapRef.current) return;
@@ -254,7 +259,7 @@ const Trip: FC<TripProps> = ({ match }) => {
 
   const cleanUp = async () => {
     await googleMapRef.current?.destroy();
-    await modal.current?.dismiss();
+    await modalRef.current?.dismiss();
 
     if (!watchRef.current) return;
 
@@ -324,8 +329,8 @@ const Trip: FC<TripProps> = ({ match }) => {
       <IonItem>
         <IonIcon icon={flag} color="primary" slot="start" />
         <IonLabel>
-          <h2>{destination?.name}</h2>
-          <p>{destination?.address.description}</p>
+          <h2>{destinationName}</h2>
+          <p>{destinationAddress?.description}</p>
         </IonLabel>
       </IonItem>
     </IonItemSliding>
@@ -366,7 +371,7 @@ const Trip: FC<TripProps> = ({ match }) => {
           breakpoints={[0.25, 0.5, 0.75]}
           initialBreakpoint={0.25}
           isOpen
-          ref={modal}
+          ref={modalRef}
         >
           <IonContent className="ion-padding">
             <IonList>

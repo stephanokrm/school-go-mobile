@@ -6,6 +6,7 @@ import { rawItineraryToItinerary } from "./rawItineraryToItinerary";
 export const rawTripToTrip = async (rawTrip: RawTrip): Promise<Trip> => ({
   id: rawTrip.id,
   path: rawTrip.path,
+  round: rawTrip.round,
   arriveAt: parseISO(rawTrip.arrive_at),
   latitude: rawTrip.latitude ?? undefined,
   longitude: rawTrip.longitude ?? undefined,

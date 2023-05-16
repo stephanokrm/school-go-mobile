@@ -46,11 +46,17 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   });
 
   const path = trip?.path;
-  const destination = trip?.itinerary?.school;
+  const round = trip?.round;
+  const itinerary = trip?.itinerary;
+  const destinationName = round ? "Pátio" : itinerary?.school?.name;
+  const destinationAddress = round
+    ? itinerary?.address
+    : itinerary?.school?.address;
   const driverLatitude = trip?.latitude;
   const driverLongitude = trip?.longitude;
-  const studentLongitude = student?.address.longitude;
-  const studentLatitude = student?.address.latitude;
+  const studentAddress = student?.address;
+  const studentLongitude = studentAddress?.longitude;
+  const studentLatitude = studentAddress?.latitude;
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
@@ -139,7 +145,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     if (!isGoogleMapCreated) return;
 
     const addMarker = async () => {
-      if (!googleMapRef.current || !destination) return;
+      if (!googleMapRef.current || !destinationAddress) return;
 
       if (destinationMarkerRef.current) {
         await googleMapRef.current.removeMarker(destinationMarkerRef.current);
@@ -147,8 +153,8 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
 
       destinationMarkerRef.current = await googleMapRef.current.addMarker({
         coordinate: {
-          lat: destination.address.latitude,
-          lng: destination.address.longitude,
+          lat: destinationAddress.latitude,
+          lng: destinationAddress.longitude,
         },
         iconSize: {
           width: zoomRef.current,
@@ -158,7 +164,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     };
 
     addMarker();
-  }, [destination, isGoogleMapCreated]);
+  }, [destinationAddress, isGoogleMapCreated]);
 
   const removeZoom = async () => {
     if (!googleMapRef.current) return;
@@ -274,14 +280,14 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
                   <h2>
                     {student?.firstName} {student?.lastName}
                   </h2>
-                  <p>{student?.address.description}</p>
+                  <p>{studentAddress?.description}</p>
                 </IonLabel>
               </IonItem>
               <IonItem>
                 <IonIcon icon={flag} color="primary" slot="start" />
                 <IonLabel>
-                  <h2>{destination?.name}</h2>
-                  <p>{destination?.address.description}</p>
+                  <h2>{destinationName}</h2>
+                  <p>{destinationAddress?.description}</p>
                 </IonLabel>
               </IonItem>
             </IonList>

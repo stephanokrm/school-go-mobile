@@ -177,6 +177,7 @@ export type RawItinerary = {
   wednesday: boolean;
   thursday: boolean;
   friday: boolean;
+  address: RawAddress;
   driver: RawDriver;
   school: RawSchool;
   students?: RawStudent[];
@@ -192,6 +193,7 @@ export type Itinerary = {
   wednesday: boolean;
   thursday: boolean;
   friday: boolean;
+  address: Address;
   driver: Driver;
   school: School;
   students?: Student[];
@@ -201,28 +203,30 @@ type Path = { lat: number; lng: number };
 
 export type RawTrip = {
   id: number;
-  path: Path[];
   arrive_at: string;
-  latitude: number | null;
-  longitude: number | null;
-  started_at: string | null;
+  created_at: string;
   finished_at: string | null;
   itinerary: RawItinerary;
-  created_at: string;
-  updated_at: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  path: Path[];
+  round: boolean;
+  started_at: string | null;
   students: RawStudent[] | null;
+  updated_at: string | null;
 };
 
 export type Trip = {
   id: number;
-  path: Path[];
   arriveAt: Date;
-  latitude?: number;
-  longitude?: number;
-  startedAt?: Date;
+  createdAt: Date;
   finishedAt?: Date;
   itinerary: Itinerary;
-  createdAt: Date;
-  updatedAt?: Date;
+  latitude?: number;
+  longitude?: number;
+  path: Path[];
+  round: boolean;
+  startedAt?: Date;
   students?: Student[];
+  updatedAt?: Date;
 };

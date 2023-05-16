@@ -5,6 +5,7 @@ import { studentToRawStudent } from "./studentToRawStudent";
 export const tripToRawTrip = async (trip: Trip): Promise<RawTrip> => ({
   id: trip.id,
   path: trip.path,
+  round: trip.round,
   arrive_at: trip.arriveAt.toISOString(),
   latitude: trip.latitude ?? null,
   longitude: trip.longitude ?? null,
