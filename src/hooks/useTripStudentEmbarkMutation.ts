@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { zonedTimeToUtc } from "date-fns-tz";
 import { useCsrfQuery } from "./useCsrfQuery";
 import { BackendError, RawTrip, Resource, Student, Trip } from "../types";
 import axios from "../lib/axios";
@@ -20,7 +21,7 @@ export const useTripStudentEmbarkMutation = () => {
       const { data } = await axios.post<Response>(
         `/api/trip/${trip.id}/student/${student.id}/embark`,
         {
-          embarked_at: new Date(),
+          embarked_at: zonedTimeToUtc(new Date(), "America/Sao_Paulo"),
           _method: "PUT",
         }
       );

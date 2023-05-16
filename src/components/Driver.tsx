@@ -8,6 +8,9 @@ import {
   IonCardTitle,
   IonIcon,
   IonText,
+  IonRefresher,
+  IonRefresherContent,
+  RefresherEventDetail,
 } from "@ionic/react";
 import { busOutline } from "ionicons/icons";
 import { useGetTripsQuery } from "../hooks/useGetTripsQuery";
@@ -25,9 +28,15 @@ const registerGeolocation = async () => {
 };
 
 export const Driver: FC = () => {
-  const { data: trips = [] } = useGetTripsQuery({
+  const { data: trips = [], refetch } = useGetTripsQuery({
     driver: true,
   });
+
+  const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
+    await refetch();
+
+    event.detail.complete();
+  };
 
   useEffect(() => {
     registerGeolocation();
@@ -35,6 +44,9 @@ export const Driver: FC = () => {
 
   return (
     <div>
+      <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+        <IonRefresherContent></IonRefresherContent>
+      </IonRefresher>
       {trips.length === 0 ? (
         <div className="ion-padding">
           <div style={{ display: "flex", justifyContent: "center" }}>
