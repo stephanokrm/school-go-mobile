@@ -8,7 +8,7 @@ interface Params {
 }
 
 export const useGetTripsQuery = (params: Params) => {
-  return useQuery(["getTrips"], async ({ signal }) => {
+  return useQuery(["Trips"], async ({ signal }) => {
     const {
       data: { data: rawTrip },
     } = await axios.get<Resource<RawTrip[]>>(`/api/trip`, {

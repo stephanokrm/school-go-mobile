@@ -19,7 +19,8 @@ export const useTripUpdateMutation = () => {
         _method: "PUT",
       });
 
-      await queryClient.refetchQueries({ queryKey: ["TripById", trip.id] });
+      await queryClient.invalidateQueries({ queryKey: ["Trips"] });
+      await queryClient.invalidateQueries({ queryKey: ["TripById", trip.id] });
 
       return data;
     }

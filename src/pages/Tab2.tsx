@@ -1,16 +1,21 @@
 import {
   IonContent,
   IonHeader,
+  IonItem,
+  IonLabel,
+  IonList,
   IonPage,
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import ExploreContainer from "../components/ExploreContainer";
 import "./Tab2.css";
 import { useAuth } from "../hooks/useAuth";
+import { useLogoutMutation } from "../hooks/useLogoutMutation";
 
 const Tab2: React.FC = () => {
   const { user } = useAuth({ middleware: "auth" });
+
+  const { mutate: logout } = useLogoutMutation();
 
   return (
     <IonPage>
@@ -29,7 +34,11 @@ const Tab2: React.FC = () => {
             </IonTitle>
           </IonToolbar>
         </IonHeader>
-        <ExploreContainer name="Tab 2 page" />
+        <IonList>
+          <IonItem onClick={() => logout()}>
+            <IonLabel color="danger">Sair</IonLabel>
+          </IonItem>
+        </IonList>
       </IonContent>
     </IonPage>
   );

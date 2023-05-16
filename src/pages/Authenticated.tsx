@@ -16,6 +16,8 @@ import { useUserUpdateMutation } from "../hooks/useUserUpdateMutation";
 import { useGetUserByMeQuery } from "../hooks/useGetUserByMeQuery";
 import { useAuth } from "../hooks/useAuth";
 import Trip from "./Trip";
+import StudentTrip from "./StudentTrip";
+import { Toast } from "@capacitor/toast";
 
 interface AddPushNotificationsListeners {
   onRegistration: (token: Token) => unknown;
@@ -32,8 +34,12 @@ const addPushNotificationsListeners = async ({
 
   await PushNotifications.addListener(
     "pushNotificationReceived",
-    (notification) => {
-      console.log("Push notification received: ", notification);
+    async (notification) => {
+      await Toast.show({
+        text: notification.title ?? "Notificação",
+        duration: "long",
+        position: "top",
+      });
     }
   );
 
@@ -101,6 +107,11 @@ export const Authenticated: FC = () => {
           <Tab2 />
         </Route>
         <Route exact path="/viagem/:id" component={Trip} />
+        <Route
+          exact
+          path="/student/:student/trip/:trip"
+          component={StudentTrip}
+        />
         <Route exact path="/">
           <Redirect to="/pagina-inicial" />
         </Route>

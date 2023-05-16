@@ -141,6 +141,7 @@ export type RawStudent = {
   address: RawAddress;
   responsible: RawResponsible;
   school: RawSchool;
+  trips: RawTrip[] | null;
   pivot: {
     order: number;
     embarked_at: string | null;
@@ -159,6 +160,7 @@ export type Student = {
   address: Address;
   responsible: Responsible;
   school: School;
+  trips?: Trip[];
   pivot?: {
     order: number;
     embarkedAt?: Date;

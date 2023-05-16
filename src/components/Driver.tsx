@@ -57,15 +57,28 @@ export const Driver: FC = () => {
               <IonCardHeader>
                 <IonCardTitle>{trip.itinerary.school.name}</IonCardTitle>
                 <IonCardSubtitle>
-                  {trip.arriveAt.toLocaleTimeString()}
+                  {trip.finishedAt
+                    ? `Finalizada às ${new Intl.DateTimeFormat("default", {
+                        hour: "numeric",
+                        minute: "numeric",
+                      }).format(trip.finishedAt)}`
+                    : `Previsão de chegada às ${new Intl.DateTimeFormat(
+                        "default",
+                        {
+                          hour: "numeric",
+                          minute: "numeric",
+                        }
+                      ).format(trip.arriveAt)}`}
                 </IonCardSubtitle>
               </IonCardHeader>
               <IonCardContent>
                 {trip.itinerary.school.address.description}
               </IonCardContent>
-              <IonButton fill="clear" routerLink={`/viagem/${trip.id}`}>
-                {trip.startedAt ? "Acompanhar" : "Começar"}
-              </IonButton>
+              {!trip.finishedAt && (
+                <IonButton fill="clear" routerLink={`/viagem/${trip.id}`}>
+                  {trip.startedAt ? "Continuar" : "Começar"}
+                </IonButton>
+              )}
             </IonCard>
           ))}
         </>

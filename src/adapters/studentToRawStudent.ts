@@ -17,6 +17,7 @@ export const studentToRawStudent = async (
   address: await addressToRawAddress(student.address),
   responsible: await responsibleToRawResponsible(student.responsible),
   school: await schoolToRawSchool(student.school),
+  trips: null,
   pivot: student.pivot
     ? {
         order: student.pivot.order,

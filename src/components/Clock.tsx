@@ -18,7 +18,6 @@ export const Clock: FC<{
     month: options?.month,
     hour: "numeric",
     minute: "numeric",
-    second: "numeric",
   }).format(today);
 
   return <>{displayTime}</>;

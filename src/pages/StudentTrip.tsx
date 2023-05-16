@@ -16,63 +16,69 @@ import {
   IonFab,
   IonFabButton,
   IonIcon,
-  IonItemSliding,
-  IonItemOptions,
-  IonItemOption,
-  IonChip,
-  useIonRouter,
 } from "@ionic/react";
-import {
-  add,
-  remove,
-  checkmarkCircle,
-  arrowForward,
-  flag,
-} from "ionicons/icons";
+import { add, remove, flag, school } from "ionicons/icons";
 import { GoogleMap } from "@capacitor/google-maps";
-import { Geolocation, CallbackID } from "@capacitor/geolocation";
+import { Geolocation } from "@capacitor/geolocation";
 import "./Trip.css";
 import { RouteComponentProps } from "react-router";
 import { useTripByIdQuery } from "../hooks/useTripByIdQuery";
-import { useTripUpdateMutation } from "../hooks/useTripUpdateMutation";
 import { useWindowDimensions } from "../hooks/useWindowDimensions";
-import { useTripStudentEmbarkMutation } from "../hooks/useTripStudentEmbarkMutation";
+import { useStudentByIdQuery } from "../hooks/useStudentByIdQuery";
 
-interface TripProps extends RouteComponentProps<{ id: string }> {}
+interface TripProps
+  extends RouteComponentProps<{ student: string; trip: string }> {}
 
-const Trip: FC<TripProps> = ({ match }) => {
-  const watchRef = useRef<CallbackID>();
+const StudentTrip: FC<TripProps> = ({ match }) => {
   const mapRef = useRef<HTMLElement>();
   const googleMapRef = useRef<GoogleMap>();
   const driverMarkerRef = useRef<string>();
+  const studentMarkerRef = useRef<string>();
   const destinationMarkerRef = useRef<string>();
-  const studentMarkersRef = useRef<string[]>([]);
   const zoomRef = useRef<number>(18);
   const modal = useRef<HTMLIonModalElement>(null);
-  const router = useIonRouter();
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
   const { height } = useWindowDimensions();
-  const { data: trip } = useTripByIdQuery(match.params.id, {
+  const { data: student } = useStudentByIdQuery(match.params.student);
+  const { data: trip } = useTripByIdQuery(match.params.trip, {
     refetchInterval: 10000,
   });
-  const { mutate: update } = useTripUpdateMutation();
-  const { mutate: embark } = useTripStudentEmbarkMutation();
 
   const path = trip?.path;
-  const students = trip?.students;
-  const latitude = trip?.latitude;
-  const longitude = trip?.longitude;
   const destination = trip?.itinerary?.school;
-  const completedAllStops = students?.every(
-    (student) => !!student.pivot?.embarkedAt
-  );
+  const driverLatitude = trip?.latitude;
+  const driverLongitude = trip?.longitude;
+  const studentLongitude = student?.address.longitude;
+  const studentLatitude = student?.address.latitude;
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
 
     const addMarker = async () => {
-      if (!googleMapRef.current || !latitude || !longitude) return;
+      if (!googleMapRef.current || !studentLatitude || !studentLongitude)
+        return;
+
+      if (studentMarkerRef.current) {
+        await googleMapRef.current.removeMarker(studentMarkerRef.current);
+      }
+
+      studentMarkerRef.current = await googleMapRef.current.addMarker({
+        coordinate: {
+          lat: studentLatitude,
+          lng: studentLongitude,
+        },
+      });
+    };
+
+    addMarker();
+  }, [studentLatitude, studentLongitude, isGoogleMapCreated]);
+
+  useEffect(() => {
+    if (!isGoogleMapCreated) return;
+
+    const addMarker = async () => {
+      if (!googleMapRef.current || !driverLatitude || !driverLongitude) return;
 
       if (driverMarkerRef.current) {
         await googleMapRef.current.removeMarker(driverMarkerRef.current);
@@ -80,8 +86,8 @@ const Trip: FC<TripProps> = ({ match }) => {
 
       driverMarkerRef.current = await googleMapRef.current.addMarker({
         coordinate: {
-          lat: latitude,
-          lng: longitude,
+          lat: driverLatitude,
+          lng: driverLongitude,
         },
         iconUrl: "bus.png",
         iconSize: {
@@ -92,48 +98,7 @@ const Trip: FC<TripProps> = ({ match }) => {
     };
 
     addMarker();
-  }, [latitude, longitude, isGoogleMapCreated]);
-
-  useEffect(() => {
-    const start = async () => {
-      if (trip && !trip.startedAt) {
-        update({
-          ...trip,
-          startedAt: new Date(),
-        });
-      }
-    };
-    const watchPosition = async () => {
-      if (!trip) return;
-
-      if (watchRef.current) {
-        await Geolocation.clearWatch({ id: watchRef.current });
-      }
-
-      watchRef.current = await Geolocation.watchPosition(
-        {
-          enableHighAccuracy: true,
-        },
-        (position) => {
-          if (!position) return;
-
-          if (
-            trip.longitude !== position.coords.longitude ||
-            trip.latitude !== position.coords.latitude
-          ) {
-            update({
-              ...trip,
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-          }
-        }
-      );
-    };
-
-    start();
-    watchPosition();
-  }, [trip]);
+  }, [driverLatitude, driverLongitude, isGoogleMapCreated]);
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
@@ -169,37 +134,6 @@ const Trip: FC<TripProps> = ({ match }) => {
 
     addPolylines();
   }, [path, isGoogleMapCreated]);
-
-  useEffect(() => {
-    if (!isGoogleMapCreated) return;
-
-    const addMarkers = async () => {
-      if (!googleMapRef.current || !students) return;
-
-      if (studentMarkersRef.current.length > 0) {
-        await googleMapRef.current.removeMarkers(studentMarkersRef.current);
-      }
-
-      const markers = students
-        .filter((student) => !student.pivot?.embarkedAt)
-        .map((student) => ({
-          coordinate: {
-            lat: student.address.latitude,
-            lng: student.address.longitude,
-          },
-          iconSize: {
-            width: zoomRef.current,
-            height: zoomRef.current,
-          },
-        }));
-
-      studentMarkersRef.current = await googleMapRef.current.addMarkers(
-        markers
-      );
-    };
-
-    addMarkers();
-  }, [students, isGoogleMapCreated]);
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
@@ -255,10 +189,6 @@ const Trip: FC<TripProps> = ({ match }) => {
   const cleanUp = async () => {
     await googleMapRef.current?.destroy();
     await modal.current?.dismiss();
-
-    if (!watchRef.current) return;
-
-    await Geolocation.clearWatch({ id: watchRef.current });
   };
 
   const loadMap = async () => {
@@ -299,38 +229,6 @@ const Trip: FC<TripProps> = ({ match }) => {
     };
   }, []);
 
-  const destinationItem = (
-    <IonItemSliding
-      onIonDrag={(event) => {
-        if (event.detail.ratio < -2 && trip) {
-          update({
-            ...trip,
-            finishedAt: new Date(),
-          });
-
-          event.target.close();
-
-          cleanUp();
-
-          router.push("/pagina-inicial");
-        }
-      }}
-    >
-      <IonItemOptions side="start">
-        <IonItemOption expandable color="danger">
-          Finalizar
-        </IonItemOption>
-      </IonItemOptions>
-      <IonItem>
-        <IonIcon icon={flag} color="primary" slot="start" />
-        <IonLabel>
-          <h2>{destination?.name}</h2>
-          <p>{destination?.address.description}</p>
-        </IonLabel>
-      </IonItem>
-    </IonItemSliding>
-  );
-
   return (
     <IonPage>
       <IonHeader>
@@ -370,50 +268,22 @@ const Trip: FC<TripProps> = ({ match }) => {
         >
           <IonContent className="ion-padding">
             <IonList>
-              {completedAllStops && destinationItem}
-              {students?.map((student, index) => (
-                <IonItemSliding
-                  disabled={index > 0 || !!student?.pivot?.embarkedAt}
-                  onIonDrag={(event) => {
-                    if (event.detail.ratio < -2 && trip) {
-                      embark({ trip, student });
-
-                      event.target.close();
-                    }
-                  }}
-                >
-                  <IonItemOptions side="start">
-                    <IonItemOption expandable>Embarcou</IonItemOption>
-                  </IonItemOptions>
-                  <IonItem>
-                    {index === 0 && !student.pivot?.embarkedAt ? (
-                      <IonIcon
-                        icon={arrowForward}
-                        color="primary"
-                        slot="start"
-                      />
-                    ) : null}
-                    <IonLabel>
-                      <h2>
-                        {student.firstName} {student.lastName}
-                      </h2>
-                      <p>{student.address.description}</p>
-                    </IonLabel>
-                    {!!student?.pivot?.embarkedAt ? (
-                      <IonIcon
-                        icon={checkmarkCircle}
-                        color="primary"
-                        slot="end"
-                      />
-                    ) : (
-                      <IonChip slot="end" color="primary">
-                        {student.pivot?.order}º
-                      </IonChip>
-                    )}
-                  </IonItem>
-                </IonItemSliding>
-              ))}
-              {!completedAllStops && destinationItem}
+              <IonItem>
+                <IonIcon icon={school} color="primary" slot="start" />
+                <IonLabel>
+                  <h2>
+                    {student?.firstName} {student?.lastName}
+                  </h2>
+                  <p>{student?.address.description}</p>
+                </IonLabel>
+              </IonItem>
+              <IonItem>
+                <IonIcon icon={flag} color="primary" slot="start" />
+                <IonLabel>
+                  <h2>{destination?.name}</h2>
+                  <p>{destination?.address.description}</p>
+                </IonLabel>
+              </IonItem>
             </IonList>
           </IonContent>
         </IonModal>
@@ -422,4 +292,4 @@ const Trip: FC<TripProps> = ({ match }) => {
   );
 };
 
-export default Trip;
+export default StudentTrip;
