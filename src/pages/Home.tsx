@@ -23,10 +23,9 @@ import { Role } from "../components/Role";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { Clock } from "../components/Clock";
 import { useGreeting } from "../hooks/useGreeting";
-import { useHistory } from "react-router";
 
 const Home: FC = () => {
-  const { user } = useAuth({ middleware: "auth" });
+  const { user } = useAuth();
   const [segment, setSegment] = useState(RoleEnum.Driver);
   const { label: greetingLabel, icon: greetingIcon } = useGreeting();
 

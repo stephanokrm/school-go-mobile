@@ -23,20 +23,25 @@ import { useAuth } from "./hooks/useAuth";
 import { Authenticated } from "./pages/Authenticated";
 import { Unauthenticated } from "./pages/Unauthenticated";
 import { IonReactRouter } from "@ionic/react-router";
+import { Loading } from "./pages/Loading";
 
 setupIonicReact({
   mode: "ios",
 });
 
 const App: FC = () => {
-  const { user } = useAuth();
-
-  const isAuthenticated = !!user;
+  const { isLoading, isAuthenticated } = useAuth();
 
   return (
     <IonApp>
       <IonReactRouter>
-        {isAuthenticated ? <Authenticated /> : <Unauthenticated />}
+        {isLoading ? (
+          <Loading />
+        ) : isAuthenticated ? (
+          <Authenticated />
+        ) : (
+          <Unauthenticated />
+        )}
       </IonReactRouter>
     </IonApp>
   );

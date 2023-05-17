@@ -1,3 +1,4 @@
+import { FC } from "react";
 import {
   IonContent,
   IonHeader,
@@ -12,9 +13,8 @@ import "./Tab2.css";
 import { useAuth } from "../hooks/useAuth";
 import { useLogoutMutation } from "../hooks/useLogoutMutation";
 
-const Tab2: React.FC = () => {
-  const { user } = useAuth({ middleware: "auth" });
-
+const Tab2: FC = () => {
+  const { user } = useAuth();
   const { mutate: logout } = useLogoutMutation();
 
   return (

@@ -3,6 +3,7 @@ import {
   IonIcon,
   IonLabel,
   IonRouterOutlet,
+  IonSpinner,
   IonTabBar,
   IonTabButton,
   IonTabs,
@@ -13,19 +14,37 @@ import Tab2 from "./Tab2";
 import { home, person } from "ionicons/icons";
 import { PushNotifications, Token } from "@capacitor/push-notifications";
 import { useUserUpdateMutation } from "../hooks/useUserUpdateMutation";
-import { useGetUserByMeQuery } from "../hooks/useGetUserByMeQuery";
 import { useAuth } from "../hooks/useAuth";
 import Trip from "./Trip";
 import StudentTrip from "./StudentTrip";
 import { Toast } from "@capacitor/toast";
 
-interface AddPushNotificationsListeners {
+interface SetUpPushNotifications {
   onRegistration: (token: Token) => unknown;
 }
 
-const addPushNotificationsListeners = async ({
+const cleanUpPushNotifications = async () => {
+  await PushNotifications.removeAllListeners();
+};
+
+const registerPushNotifications = async () => {
+  const permissionStatus = await PushNotifications.checkPermissions();
+
+  if (
+    permissionStatus.receive === "prompt" &&
+    (await PushNotifications.requestPermissions()).receive !== "granted"
+  ) {
+    throw new Error("User denied permissions!");
+  }
+
+  await PushNotifications.register();
+};
+
+const setUpPushNotifications = async ({
   onRegistration,
-}: AddPushNotificationsListeners) => {
+}: SetUpPushNotifications) => {
+  await cleanUpPushNotifications();
+
   await PushNotifications.addListener("registration", onRegistration);
 
   await PushNotifications.addListener("registrationError", (err) => {
@@ -53,26 +72,17 @@ const addPushNotificationsListeners = async ({
       );
     }
   );
-};
 
-const registerPushNotifications = async () => {
-  const permissionStatus = await PushNotifications.checkPermissions();
-
-  if (
-    permissionStatus.receive === "prompt" &&
-    (await PushNotifications.requestPermissions()).receive !== "granted"
-  ) {
-    throw new Error("User denied permissions!");
-  }
-
-  await PushNotifications.register();
+  await registerPushNotifications();
 };
 
 export const Authenticated: FC = () => {
+  const { isAuthenticated, isLoading, user: me } = useAuth();
   const { mutate } = useUserUpdateMutation();
-  const { data: me } = useGetUserByMeQuery();
 
-  useAuth({ middleware: "auth" });
+  if (isLoading) return <IonSpinner color="primary" />;
+
+  if (!isAuthenticated) return <Redirect to="/login" />;
 
   const onRegistration = (token: Token) => {
     if (!me) return;
@@ -86,35 +96,27 @@ export const Authenticated: FC = () => {
   };
 
   useEffect(() => {
-    addPushNotificationsListeners({
+    setUpPushNotifications({
       onRegistration,
-    }).then(registerPushNotifications);
+    });
 
     return () => {
-      PushNotifications.removeAllListeners().then(() =>
-        console.log("removeAllListeners")
-      );
+      cleanUpPushNotifications();
     };
   }, []);
 
   return (
     <IonTabs>
       <IonRouterOutlet>
-        <Route exact path="/pagina-inicial">
-          <Home />
-        </Route>
-        <Route exact path="/conta">
-          <Tab2 />
-        </Route>
+        <Route exact path="/pagina-inicial" component={Home} />
+        <Route exact path="/conta" component={Tab2} />
         <Route exact path="/viagem/:id" component={Trip} />
         <Route
           exact
           path="/student/:student/trip/:trip"
           component={StudentTrip}
         />
-        <Route exact path="/">
-          <Redirect to="/pagina-inicial" />
-        </Route>
+        <Route render={() => <Redirect to="/pagina-inicial" />} />
       </IonRouterOutlet>
       <IonTabBar slot="bottom">
         <IonTabButton tab="tab1" href="/pagina-inicial">

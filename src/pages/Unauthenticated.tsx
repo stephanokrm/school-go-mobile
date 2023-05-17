@@ -1,20 +1,20 @@
 import { FC } from "react";
-import { IonRouterOutlet } from "@ionic/react";
+import { IonRouterOutlet, IonSpinner } from "@ionic/react";
 import { Redirect, Route } from "react-router-dom";
 import { Login } from "./Login";
 import { useAuth } from "../hooks/useAuth";
 
 export const Unauthenticated: FC = () => {
-  useAuth({ middleware: "guest", redirectIfAuthenticated: "/pagina-inicial" });
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return <IonSpinner color="primary" />;
+
+  if (isAuthenticated) return <Redirect to="/pagina-inicial" />;
 
   return (
     <IonRouterOutlet>
-      <Route exact path="/login">
-        <Login />
-      </Route>
-      <Route exact path="/">
-        <Redirect to="/login" />
-      </Route>
+      <Route exact path="/login" component={Login} />
+      <Route render={() => <Redirect to="/login" />} />
     </IonRouterOutlet>
   );
 };
