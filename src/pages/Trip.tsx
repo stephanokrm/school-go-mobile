@@ -48,6 +48,7 @@ const Trip: FC<TripProps> = ({ match }) => {
   const driverMarkerRef = useRef<string>();
   const destinationMarkerRef = useRef<string>();
   const studentMarkersRef = useRef<string[]>([]);
+  const polylinesRef = useRef<string[]>([]);
   const zoomRef = useRef<number>(18);
   const modalRef = useRef<HTMLIonModalElement>(null);
   const router = useIonRouter();
@@ -165,7 +166,11 @@ const Trip: FC<TripProps> = ({ match }) => {
     const addPolylines = async () => {
       if (!googleMapRef.current || !path) return;
 
-      googleMapRef.current.addPolylines([
+      if (polylinesRef.current.length > 0) {
+        await googleMapRef.current.removePolylines(polylinesRef.current);
+      }
+
+      polylinesRef.current = await googleMapRef.current.addPolylines([
         {
           strokeColor: "#ffc409",
           strokeWeight: 15,
