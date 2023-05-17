@@ -10,18 +10,34 @@ import {
   IonLabel,
   IonList,
   IonListHeader,
+  IonRefresher,
+  IonRefresherContent,
   IonText,
+  RefresherEventDetail,
 } from "@ionic/react";
 import { busOutline } from "ionicons/icons";
 import { useStudentsQuery } from "../hooks/useStudentsQuery";
+import { useTripStudentPresentMutation } from "../hooks/useTripStudentPresentMutation";
+import { useTripStudentAbsentMutation } from "../hooks/useTripStudentAbsentMutation";
 
 export const Responsible: FC = () => {
-  const { data: students = [] } = useStudentsQuery({
+  const { data: students = [], refetch } = useStudentsQuery({
     responsible: true,
   });
+  const { mutate: absent } = useTripStudentAbsentMutation();
+  const { mutate: present } = useTripStudentPresentMutation();
+
+  const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
+    await refetch();
+
+    event.detail.complete();
+  };
 
   return (
     <div>
+      <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+        <IonRefresherContent></IonRefresherContent>
+      </IonRefresher>
       {students.length === 0 ? (
         <div className="ion-padding">
           <div style={{ display: "flex", justifyContent: "center" }}>
@@ -61,14 +77,36 @@ export const Responsible: FC = () => {
                   <IonCardContent>
                     {trip.itinerary.school.address.description}
                   </IonCardContent>
-                  {!trip.finishedAt && trip.startedAt && (
-                    <IonButton
-                      fill="clear"
-                      routerLink={`/student/${student.id}/trip/${trip.id}`}
-                    >
-                      Acompanhar
-                    </IonButton>
-                  )}
+                  {!trip.finishedAt &&
+                    trip.startedAt &&
+                    !trip.pivot?.absent && (
+                      <IonButton
+                        fill="clear"
+                        routerLink={`/student/${student.id}/trip/${trip.id}`}
+                      >
+                        Acompanhar
+                      </IonButton>
+                    )}
+                  {!trip.round &&
+                    !trip.finishedAt &&
+                    !trip.pivot?.embarkedAt &&
+                    !!trip.pivot &&
+                    (trip.pivot.absent ? (
+                      <IonButton
+                        fill="clear"
+                        onClick={() => present({ trip, student })}
+                      >
+                        Irá Comparecer
+                      </IonButton>
+                    ) : (
+                      <IonButton
+                        fill="clear"
+                        color="danger"
+                        onClick={() => absent({ trip, student })}
+                      >
+                        Não Irá Comparecer
+                      </IonButton>
+                    ))}
                 </IonCard>
               ))}
             </>

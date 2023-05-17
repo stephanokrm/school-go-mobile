@@ -1,14 +1,10 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 import {
-  IonModal,
   IonHeader,
   IonContent,
   IonToolbar,
   IonTitle,
   IonPage,
-  IonList,
-  IonItem,
-  IonLabel,
   IonButtons,
   IonBackButton,
   useIonViewDidEnter,
@@ -17,7 +13,7 @@ import {
   IonFabButton,
   IonIcon,
 } from "@ionic/react";
-import { add, remove, flag, school } from "ionicons/icons";
+import { add, remove } from "ionicons/icons";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation } from "@capacitor/geolocation";
 import "./Trip.css";
@@ -48,7 +44,6 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   const path = trip?.path;
   const round = trip?.round;
   const itinerary = trip?.itinerary;
-  const destinationName = round ? "Pátio" : itinerary?.school?.name;
   const destinationAddress = round
     ? itinerary?.address
     : itinerary?.school?.address;
@@ -116,7 +111,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
         left: 0,
         right: 0,
         top: 0,
-        bottom: height * 0.25,
+        bottom: 0,
       });
     };
 
@@ -240,9 +235,11 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton />
+            <IonBackButton text="Voltar" />
           </IonButtons>
-          <IonTitle>Viagem</IonTitle>
+          <IonTitle>
+            {student?.firstName} {student?.lastName}
+          </IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
@@ -264,35 +261,6 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
-        <IonModal
-          backdropBreakpoint={0.5}
-          backdropDismiss={false}
-          breakpoints={[0.25, 0.5, 0.75]}
-          initialBreakpoint={0.25}
-          isOpen
-          ref={modal}
-        >
-          <IonContent className="ion-padding">
-            <IonList>
-              <IonItem>
-                <IonIcon icon={school} color="primary" slot="start" />
-                <IonLabel>
-                  <h2>
-                    {student?.firstName} {student?.lastName}
-                  </h2>
-                  <p>{studentAddress?.description}</p>
-                </IonLabel>
-              </IonItem>
-              <IonItem>
-                <IonIcon icon={flag} color="primary" slot="start" />
-                <IonLabel>
-                  <h2>{destinationName}</h2>
-                  <p>{destinationAddress?.description}</p>
-                </IonLabel>
-              </IonItem>
-            </IonList>
-          </IonContent>
-        </IonModal>
       </IonContent>
     </IonPage>
   );

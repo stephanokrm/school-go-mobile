@@ -343,7 +343,7 @@ const Trip: FC<TripProps> = ({ match }) => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton />
+            <IonBackButton text="Voltar" />
           </IonButtons>
           <IonTitle>Viagem</IonTitle>
         </IonToolbar>

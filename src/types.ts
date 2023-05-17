@@ -129,6 +129,20 @@ export type School = {
   address: Address;
 };
 
+export type RawStudentTripPivot = {
+  order: number;
+  absent: boolean;
+  embarked_at: string | null;
+  disembarked_at: string | null;
+};
+
+export type StudentTripPivot = {
+  order: number;
+  absent: boolean;
+  embarkedAt?: Date;
+  disembarkedAt?: Date;
+};
+
 export type RawStudent = {
   id: number;
   first_name: string;
@@ -142,10 +156,7 @@ export type RawStudent = {
   responsible: RawResponsible;
   school: RawSchool;
   trips: RawTrip[] | null;
-  pivot: {
-    order: number;
-    embarked_at: string | null;
-  } | null;
+  pivot: RawStudentTripPivot | null;
 };
 
 export type Student = {
@@ -161,10 +172,7 @@ export type Student = {
   responsible: Responsible;
   school: School;
   trips?: Trip[];
-  pivot?: {
-    order: number;
-    embarkedAt?: Date;
-  };
+  pivot?: StudentTripPivot;
 };
 
 export type RawItinerary = {
@@ -214,6 +222,7 @@ export type RawTrip = {
   started_at: string | null;
   students: RawStudent[] | null;
   updated_at: string | null;
+  pivot: RawStudentTripPivot | null;
 };
 
 export type Trip = {
@@ -229,4 +238,5 @@ export type Trip = {
   startedAt?: Date;
   students?: Student[];
   updatedAt?: Date;
+  pivot?: StudentTripPivot;
 };

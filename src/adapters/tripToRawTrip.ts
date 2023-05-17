@@ -2,6 +2,7 @@ import { zonedTimeToUtc } from "date-fns-tz";
 import { RawTrip, Trip } from "../types";
 import { itineraryToRawItinerary } from "./itineraryToRawItinerary";
 import { studentToRawStudent } from "./studentToRawStudent";
+import { studentTripPivotToRawStudentTripPivot } from "./studentTripPivotToRawStudentTripPivot";
 
 export const tripToRawTrip = async (trip: Trip): Promise<RawTrip> => ({
   id: trip.id,
@@ -21,5 +22,8 @@ export const tripToRawTrip = async (trip: Trip): Promise<RawTrip> => ({
   updated_at: trip.updatedAt ? trip.updatedAt.toISOString() : null,
   students: Array.isArray(trip.students)
     ? await Promise.all(trip.students.map(studentToRawStudent))
+    : null,
+  pivot: trip.pivot
+    ? await studentTripPivotToRawStudentTripPivot(trip.pivot)
     : null,
 });

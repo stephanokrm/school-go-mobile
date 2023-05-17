@@ -2,6 +2,7 @@ import { RawStudent, Student } from "../types";
 import { addressToRawAddress } from "./addressToRawAddress";
 import { responsibleToRawResponsible } from "./responsibleToRawResponsible";
 import { schoolToRawSchool } from "./schoolToRawSchool";
+import { studentTripPivotToRawStudentTripPivot } from "./studentTripPivotToRawStudentTripPivot";
 
 export const studentToRawStudent = async (
   student: Student
@@ -19,11 +20,6 @@ export const studentToRawStudent = async (
   school: await schoolToRawSchool(student.school),
   trips: null,
   pivot: student.pivot
-    ? {
-        order: student.pivot.order,
-        embarked_at: student.pivot.embarkedAt
-          ? student.pivot.embarkedAt.toISOString()
-          : null,
-      }
+    ? await studentTripPivotToRawStudentTripPivot(student.pivot)
     : null,
 });

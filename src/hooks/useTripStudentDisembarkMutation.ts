@@ -24,7 +24,7 @@ export const useTripStudentDisembarkMutation = () => {
         }
       );
 
-      await queryClient.refetchQueries({ queryKey: ["TripById", trip.id] });
+      await queryClient.invalidateQueries({ queryKey: ["TripById", trip.id] });
 
       return data;
     }
