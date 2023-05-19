@@ -20,7 +20,7 @@ import { useStudentsQuery } from "../hooks/useStudentsQuery";
 import { useTripStudentPresentMutation } from "../hooks/useTripStudentPresentMutation";
 import { useTripStudentAbsentMutation } from "../hooks/useTripStudentAbsentMutation";
 
-export const Responsible: FC = () => {
+const Responsible: FC = () => {
   const { data: students = [], refetch } = useStudentsQuery({
     responsible: true,
   });
@@ -116,3 +116,5 @@ export const Responsible: FC = () => {
     </div>
   );
 };
+
+export default Responsible;

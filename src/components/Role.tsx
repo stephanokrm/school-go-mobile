@@ -1,11 +1,12 @@
-import { FC } from "react";
+import { FC, lazy } from "react";
 import { RoleEnum } from "../enums/Role";
-import { Driver } from "./Driver";
-import { Responsible } from "./Responsible";
 
 interface RoleProps {
   role: RoleEnum;
 }
+
+const Driver = lazy(() => import("./Driver"));
+const Responsible = lazy(() => import("./Responsible"));
 
 export const Role: FC<RoleProps> = ({ role }) => {
   switch (role) {

@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, lazy, useEffect } from "react";
 import {
   IonIcon,
   IonLabel,
@@ -15,13 +15,15 @@ import { home, person } from "ionicons/icons";
 import { PushNotifications, Token } from "@capacitor/push-notifications";
 import { useUserUpdateMutation } from "../hooks/useUserUpdateMutation";
 import { useAuth } from "../hooks/useAuth";
-import Trip from "./Trip";
-import StudentTrip from "./StudentTrip";
 import { Toast } from "@capacitor/toast";
+import { useJsApiLoader } from "@react-google-maps/api";
 
 interface SetUpPushNotifications {
   onRegistration: (token: Token) => unknown;
 }
+
+const Trip = lazy(() => import("./Trip"));
+const StudentTrip = lazy(() => import("./StudentTrip"));
 
 const cleanUpPushNotifications = async () => {
   await PushNotifications.removeAllListeners();
@@ -76,11 +78,15 @@ const setUpPushNotifications = async ({
   await registerPushNotifications();
 };
 
-export const Authenticated: FC = () => {
+const Authenticated: FC = () => {
   const { isAuthenticated, isLoading, user: me } = useAuth();
   const { mutate } = useUserUpdateMutation();
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
+  });
 
-  if (isLoading) return <IonSpinner color="primary" />;
+  if (isLoading || !isLoaded) return <IonSpinner color="primary" />;
 
   if (!isAuthenticated) return <Redirect to="/login" />;
 
@@ -131,3 +137,5 @@ export const Authenticated: FC = () => {
     </IonTabs>
   );
 };
+
+export default Authenticated;

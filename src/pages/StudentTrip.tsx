@@ -9,11 +9,7 @@ import {
   IonBackButton,
   useIonViewDidEnter,
   useIonViewWillLeave,
-  IonFab,
-  IonFabButton,
-  IonIcon,
 } from "@ionic/react";
-import { add, remove } from "ionicons/icons";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation } from "@capacitor/geolocation";
 import "./Trip.css";
@@ -41,7 +37,6 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     refetchInterval: 10000,
   });
 
-  const path = trip?.path;
   const round = trip?.round;
   const itinerary = trip?.itinerary;
   const destinationAddress = round
@@ -49,6 +44,8 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     : itinerary?.school?.address;
   const driverLatitude = trip?.latitude;
   const driverLongitude = trip?.longitude;
+  const destinationLatitude = destinationAddress?.latitude;
+  const destinationLongitude = destinationAddress?.longitude;
   const studentAddress = student?.address;
   const studentLongitude = studentAddress?.longitude;
   const studentLatitude = studentAddress?.latitude;
@@ -104,6 +101,47 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   useEffect(() => {
     if (!isGoogleMapCreated) return;
 
+    const setCamera = async () => {
+      if (
+        !googleMapRef.current ||
+        !driverLatitude ||
+        !driverLongitude ||
+        !destinationLatitude ||
+        !destinationLongitude
+      )
+        return;
+
+      const from = { lat: driverLatitude, lng: driverLongitude };
+      const to = {
+        lat: destinationLatitude,
+        lng: destinationLongitude,
+      };
+      const center = new window.google.maps.LatLngBounds(from, to).getCenter();
+      const distance =
+        window.google.maps.geometry.spherical.computeDistanceBetween(from, to);
+
+      console.log({ distance });
+
+      await googleMapRef.current?.setCamera({
+        coordinate: {
+          lat: center.lat(),
+          lng: center.lng(),
+        },
+      });
+    };
+
+    setCamera();
+  }, [
+    driverLatitude,
+    driverLongitude,
+    destinationLatitude,
+    destinationLongitude,
+    isGoogleMapCreated,
+  ]);
+
+  useEffect(() => {
+    if (!isGoogleMapCreated) return;
+
     const setPadding = async () => {
       if (!googleMapRef.current) return;
 
@@ -121,26 +159,13 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   useEffect(() => {
     if (!isGoogleMapCreated) return;
 
-    const addPolylines = async () => {
-      if (!googleMapRef.current || !path) return;
-
-      googleMapRef.current.addPolylines([
-        {
-          strokeColor: "#ffc409",
-          strokeWeight: 15,
-          path,
-        },
-      ]);
-    };
-
-    addPolylines();
-  }, [path, isGoogleMapCreated]);
-
-  useEffect(() => {
-    if (!isGoogleMapCreated) return;
-
     const addMarker = async () => {
-      if (!googleMapRef.current || !destinationAddress) return;
+      if (
+        !googleMapRef.current ||
+        !destinationLatitude ||
+        !destinationLongitude
+      )
+        return;
 
       if (destinationMarkerRef.current) {
         await googleMapRef.current.removeMarker(destinationMarkerRef.current);
@@ -148,8 +173,8 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
 
       destinationMarkerRef.current = await googleMapRef.current.addMarker({
         coordinate: {
-          lat: destinationAddress.latitude,
-          lng: destinationAddress.longitude,
+          lat: destinationLatitude,
+          lng: destinationLongitude,
         },
         iconSize: {
           width: zoomRef.current,
@@ -159,33 +184,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     };
 
     addMarker();
-  }, [destinationAddress, isGoogleMapCreated]);
-
-  const removeZoom = async () => {
-    if (!googleMapRef.current) return;
-
-    const zoom = zoomRef.current - 1;
-
-    zoomRef.current = zoom;
-
-    await googleMapRef.current.setCamera({
-      animate: true,
-      zoom,
-    });
-  };
-
-  const addZoom = async () => {
-    if (!googleMapRef.current) return;
-
-    const zoom = zoomRef.current + 1;
-
-    zoomRef.current = zoom;
-
-    await googleMapRef.current.setCamera({
-      animate: true,
-      zoom,
-    });
-  };
+  }, [destinationLatitude, destinationLongitude, isGoogleMapCreated]);
 
   const cleanUp = async () => {
     await googleMapRef.current?.destroy();
@@ -251,16 +250,6 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
             height: "100vh",
           }}
         />
-        <IonFab slot="fixed" vertical="center" horizontal="start">
-          <IonFabButton size="small" onClick={removeZoom}>
-            <IonIcon icon={remove} />
-          </IonFabButton>
-        </IonFab>
-        <IonFab slot="fixed" vertical="center" horizontal="end">
-          <IonFabButton size="small" onClick={addZoom}>
-            <IonIcon icon={add} />
-          </IonFabButton>
-        </IonFab>
       </IonContent>
     </IonPage>
   );

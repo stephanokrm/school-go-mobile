@@ -4,7 +4,7 @@ import { Redirect, Route } from "react-router-dom";
 import { Login } from "./Login";
 import { useAuth } from "../hooks/useAuth";
 
-export const Unauthenticated: FC = () => {
+const Unauthenticated: FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) return <IonSpinner color="primary" />;
@@ -18,3 +18,5 @@ export const Unauthenticated: FC = () => {
     </IonRouterOutlet>
   );
 };
+
+export default Unauthenticated;

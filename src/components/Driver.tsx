@@ -27,7 +27,7 @@ const registerGeolocation = async () => {
   }
 };
 
-export const Driver: FC = () => {
+const Driver: FC = () => {
   const { data: trips = [], refetch } = useGetTripsQuery({
     driver: true,
   });
@@ -98,3 +98,5 @@ export const Driver: FC = () => {
     </div>
   );
 };
+
+export default Driver;

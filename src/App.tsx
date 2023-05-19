@@ -18,16 +18,17 @@ import "@ionic/react/css/display.css";
 
 /* Theme variables */
 import "./theme/variables.css";
-import { FC } from "react";
+import { FC, lazy } from "react";
 import { useAuth } from "./hooks/useAuth";
-import { Authenticated } from "./pages/Authenticated";
-import { Unauthenticated } from "./pages/Unauthenticated";
 import { IonReactRouter } from "@ionic/react-router";
 import { Loading } from "./pages/Loading";
 
 setupIonicReact({
   mode: "ios",
 });
+
+const Authenticated = lazy(() => import("./pages/Authenticated"));
+const Unauthenticated = lazy(() => import("./pages/Unauthenticated"));
 
 const App: FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
