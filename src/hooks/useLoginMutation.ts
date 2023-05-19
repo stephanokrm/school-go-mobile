@@ -19,7 +19,7 @@ export const useLoginMutation = () => {
       const { data } = await axios.post<Response>("/login", login);
 
       await queryClient.invalidateQueries(["getUserByMe"]);
-      await router.push("/pagina-inicial", "root", "replace");
+      await router.push("/home", "root", "replace");
 
       return data;
     }

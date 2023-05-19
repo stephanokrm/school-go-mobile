@@ -9,11 +9,10 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import "./Tab2.css";
 import { useAuth } from "../hooks/useAuth";
 import { useLogoutMutation } from "../hooks/useLogoutMutation";
 
-const Tab2: FC = () => {
+const Account: FC = () => {
   const { user } = useAuth();
   const { mutate: logout } = useLogoutMutation();
 
@@ -44,4 +43,4 @@ const Tab2: FC = () => {
   );
 };
 
-export default Tab2;
+export default Account;

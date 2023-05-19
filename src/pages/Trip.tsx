@@ -39,7 +39,7 @@ import { useWindowDimensions } from "../hooks/useWindowDimensions";
 import { useTripStudentEmbarkMutation } from "../hooks/useTripStudentEmbarkMutation";
 import { useTripStudentDisembarkMutation } from "../hooks/useTripStudentDisembarkMutation";
 
-interface TripProps extends RouteComponentProps<{ id: string }> {}
+interface TripProps extends RouteComponentProps<{ trip: string }> {}
 
 const Trip: FC<TripProps> = ({ match }) => {
   const watchRef = useRef<CallbackID>();
@@ -55,8 +55,8 @@ const Trip: FC<TripProps> = ({ match }) => {
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
   const { height } = useWindowDimensions();
-  const { data: trip } = useTripByIdQuery(match.params.id, {
-    refetchInterval: 10000,
+  const { data: trip } = useTripByIdQuery(match.params.trip, {
+    refetchInterval: 5000,
   });
   const { mutate: update } = useTripUpdateMutation();
   const { mutate: embark } = useTripStudentEmbarkMutation();
@@ -324,7 +324,7 @@ const Trip: FC<TripProps> = ({ match }) => {
 
           cleanUp();
 
-          router.push("/pagina-inicial");
+          router.push("/home");
         }
       }}
     >

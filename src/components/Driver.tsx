@@ -87,7 +87,7 @@ const Driver: FC = () => {
                 {trip.itinerary.school.address.description}
               </IonCardContent>
               {!trip.finishedAt && (
-                <IonButton fill="clear" routerLink={`/viagem/${trip.id}`}>
+                <IonButton fill="clear" routerLink={`/trip/${trip.id}`}>
                   {trip.startedAt ? "Continuar" : "Começar"}
                 </IonButton>
               )}

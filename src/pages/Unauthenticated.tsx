@@ -9,7 +9,7 @@ const Unauthenticated: FC = () => {
 
   if (isLoading) return <IonSpinner color="primary" />;
 
-  if (isAuthenticated) return <Redirect to="/pagina-inicial" />;
+  if (isAuthenticated) return <Redirect to="/home" />;
 
   return (
     <IonRouterOutlet>

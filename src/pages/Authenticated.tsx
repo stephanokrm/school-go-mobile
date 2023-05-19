@@ -10,13 +10,14 @@ import {
 } from "@ionic/react";
 import { Redirect, Route } from "react-router-dom";
 import Home from "./Home";
-import Tab2 from "./Tab2";
+import Account from "./Account";
 import { home, person } from "ionicons/icons";
 import { PushNotifications, Token } from "@capacitor/push-notifications";
 import { useUserUpdateMutation } from "../hooks/useUserUpdateMutation";
 import { useAuth } from "../hooks/useAuth";
 import { Toast } from "@capacitor/toast";
 import { useJsApiLoader } from "@react-google-maps/api";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
 interface SetUpPushNotifications {
   onRegistration: (token: Token) => unknown;
@@ -24,6 +25,10 @@ interface SetUpPushNotifications {
 
 const Trip = lazy(() => import("./Trip"));
 const StudentTrip = lazy(() => import("./StudentTrip"));
+
+const hapticsImpactLight = async () => {
+  await Haptics.impact({ style: ImpactStyle.Light });
+};
 
 const cleanUpPushNotifications = async () => {
   await PushNotifications.removeAllListeners();
@@ -114,23 +119,27 @@ const Authenticated: FC = () => {
   return (
     <IonTabs>
       <IonRouterOutlet>
-        <Route exact path="/pagina-inicial" component={Home} />
-        <Route exact path="/conta" component={Tab2} />
-        <Route exact path="/viagem/:id" component={Trip} />
+        <Route exact path="/home" component={Home} />
+        <Route exact path="/account" component={Account} />
+        <Route exact path="/trip/:trip" component={Trip} />
         <Route
           exact
           path="/student/:student/trip/:trip"
           component={StudentTrip}
         />
-        <Route render={() => <Redirect to="/pagina-inicial" />} />
+        <Route render={() => <Redirect to="/home" />} />
       </IonRouterOutlet>
       <IonTabBar slot="bottom">
-        <IonTabButton tab="tab1" href="/pagina-inicial">
-          <IonIcon aria-hidden="true" icon={home} />
+        <IonTabButton tab="home" href="/home" onClick={hapticsImpactLight}>
+          <IonIcon aria-hidden icon={home} />
           <IonLabel>Página inicial</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="tab2" href="/conta">
-          <IonIcon aria-hidden="true" icon={person} />
+        <IonTabButton
+          tab="account"
+          href="/account"
+          onClick={hapticsImpactLight}
+        >
+          <IonIcon aria-hidden icon={person} />
           <IonLabel>Conta</IonLabel>
         </IonTabButton>
       </IonTabBar>
