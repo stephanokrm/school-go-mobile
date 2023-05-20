@@ -362,7 +362,7 @@ const Trip: FC<TripProps> = ({ match }) => {
           <IonTitle>Viagem</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
+      <IonContent className="trip">
         <capacitor-google-map
           ref={mapRef}
           style={{

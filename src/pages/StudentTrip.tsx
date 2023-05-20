@@ -261,7 +261,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
           </IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
+      <IonContent className="trip">
         <capacitor-google-map
           ref={mapRef}
           style={{
