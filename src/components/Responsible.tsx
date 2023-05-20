@@ -87,8 +87,7 @@ const Responsible: FC = () => {
                         Acompanhar
                       </IonButton>
                     )}
-                  {!trip.round &&
-                    !trip.finishedAt &&
+                  {!trip.finishedAt &&
                     !trip.pivot?.embarkedAt &&
                     !!trip.pivot &&
                     (trip.pivot.absent ? (

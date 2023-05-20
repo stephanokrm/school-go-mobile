@@ -98,12 +98,8 @@ const Authenticated: FC = () => {
   return (
     <IonRouterOutlet id="main">
       <Route path="/tabs" component={Tabs} />
-      <Route exact path="/trip/:trip" component={Trip} />
-      <Route
-        exact
-        path="/student/:student/trip/:trip"
-        component={StudentTrip}
-      />
+      <Route path="/trip/:trip" component={Trip} />
+      <Route path="/student/:student/trip/:trip" component={StudentTrip} />
       <Route render={() => <Redirect to="/tabs" />} />
     </IonRouterOutlet>
   );
