@@ -100,8 +100,6 @@ const Trip: FC<TripProps> = ({ match }) => {
 
       await googleMapRef.current.setCamera({
         animate: true,
-        angle: 10,
-        zoom: 15,
         coordinate: {
           lat: latitude,
           lng: longitude,
