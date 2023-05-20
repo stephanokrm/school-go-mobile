@@ -18,25 +18,29 @@ import "@ionic/react/css/display.css";
 
 /* Theme variables */
 import "./theme/variables.css";
-import { FC, lazy } from "react";
+import { FC } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { IonReactRouter } from "@ionic/react-router";
 import { Loading } from "./pages/Loading";
+import { useJsApiLoader } from "@react-google-maps/api";
+import Authenticated from "./pages/Authenticated";
+import Unauthenticated from "./pages/Unauthenticated";
 
 setupIonicReact({
   mode: "ios",
 });
 
-const Authenticated = lazy(() => import("./pages/Authenticated"));
-const Unauthenticated = lazy(() => import("./pages/Unauthenticated"));
-
 const App: FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
+  });
 
   return (
     <IonApp>
       <IonReactRouter>
-        {isLoading ? (
+        {isLoading || !isLoaded ? (
           <Loading />
         ) : isAuthenticated ? (
           <Authenticated />

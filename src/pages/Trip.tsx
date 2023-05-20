@@ -324,7 +324,7 @@ const Trip: FC<TripProps> = ({ match }) => {
 
           cleanUp();
 
-          router.push("/home");
+          router.push("/tabs/home", "root");
         }
       }}
     >

@@ -25,9 +25,9 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   const mapRef = useRef<HTMLElement>();
   const googleMapRef = useRef<GoogleMap>();
   const driverMarkerRef = useRef<string>();
-  const studentMarkerRef = useRef<string>();
+  const originMarkerRef = useRef<string>();
   const destinationMarkerRef = useRef<string>();
-  const zoomRef = useRef<number>(18);
+  const zoomRef = useRef<number>(15);
   const modal = useRef<HTMLIonModalElement>(null);
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
@@ -38,39 +38,46 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   });
 
   const round = trip?.round;
-  const itinerary = trip?.itinerary;
+  const embarkedAt = student?.pivot?.embarkedAt;
+  const originAddress = round
+    ? trip?.itinerary?.school?.address
+    : student?.address;
   const destinationAddress = round
-    ? itinerary?.address
-    : itinerary?.school?.address;
+    ? student?.address
+    : trip?.itinerary?.school?.address;
   const driverLatitude = trip?.latitude;
   const driverLongitude = trip?.longitude;
+  const originLatitude = originAddress?.latitude;
+  const originLongitude = originAddress?.longitude;
   const destinationLatitude = destinationAddress?.latitude;
   const destinationLongitude = destinationAddress?.longitude;
-  const studentAddress = student?.address;
-  const studentLongitude = studentAddress?.longitude;
-  const studentLatitude = studentAddress?.latitude;
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
 
     const addMarker = async () => {
-      if (!googleMapRef.current || !studentLatitude || !studentLongitude)
+      if (
+        !googleMapRef.current ||
+        !originLatitude ||
+        !originLongitude ||
+        embarkedAt
+      )
         return;
 
-      if (studentMarkerRef.current) {
-        await googleMapRef.current.removeMarker(studentMarkerRef.current);
+      if (originMarkerRef.current) {
+        await googleMapRef.current.removeMarker(originMarkerRef.current);
       }
 
-      studentMarkerRef.current = await googleMapRef.current.addMarker({
+      originMarkerRef.current = await googleMapRef.current.addMarker({
         coordinate: {
-          lat: studentLatitude,
-          lng: studentLongitude,
+          lat: originLatitude,
+          lng: originLongitude,
         },
       });
     };
 
     addMarker();
-  }, [studentLatitude, studentLongitude, isGoogleMapCreated]);
+  }, [embarkedAt, originLatitude, originLongitude, isGoogleMapCreated]);
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
@@ -106,23 +113,38 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
         !googleMapRef.current ||
         !driverLatitude ||
         !driverLongitude ||
+        !originLatitude ||
+        !originLongitude ||
         !destinationLatitude ||
         !destinationLongitude
       )
         return;
 
-      const from = { lat: driverLatitude, lng: driverLongitude };
-      const to = {
-        lat: destinationLatitude,
-        lng: destinationLongitude,
-      };
-      const center = new window.google.maps.LatLngBounds(from, to).getCenter();
-      const distance =
-        window.google.maps.geometry.spherical.computeDistanceBetween(from, to);
+      await window.google.maps.importLibrary("geometry");
 
-      console.log({ distance });
+      const driver = new google.maps.LatLng(driverLatitude, driverLongitude);
+      const from = new google.maps.LatLng(originLatitude, originLongitude);
+      const to = new google.maps.LatLng(
+        destinationLatitude,
+        destinationLongitude
+      );
+
+      const bounds = new window.google.maps.LatLngBounds();
+      bounds.extend(driver);
+      bounds.extend(from);
+      bounds.extend(to);
+
+      const center = bounds.getCenter();
+
+      const distance =
+        window.google.maps.geometry.spherical.computeDistanceBetween(
+          driver,
+          to
+        );
 
       await googleMapRef.current?.setCamera({
+        animate: true,
+        zoom: distance * 0.01,
         coordinate: {
           lat: center.lat(),
           lng: center.lng(),
@@ -134,6 +156,8 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   }, [
     driverLatitude,
     driverLongitude,
+    originLatitude,
+    originLongitude,
     destinationLatitude,
     destinationLongitude,
     isGoogleMapCreated,
@@ -203,6 +227,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
       element: mapRef.current,
       apiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
       config: {
+        gestureHandling: "none",
         center: {
           lat: currentPosition.coords.latitude,
           lng: currentPosition.coords.longitude,
@@ -210,11 +235,6 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
         zoom: zoomRef.current,
       },
     });
-
-    await googleMapRef.current.enableCurrentLocation(true);
-    await googleMapRef.current.setOnBoundsChangedListener(
-      (event) => (zoomRef.current = event.zoom)
-    );
 
     setIsGoogleMapCreated(true);
   };
