@@ -20,7 +20,6 @@ import {
   IonItemOptions,
   IonItemOption,
   IonChip,
-  useIonRouter,
 } from "@ionic/react";
 import {
   add,
@@ -32,7 +31,7 @@ import {
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation, CallbackID } from "@capacitor/geolocation";
 import "./Trip.css";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, useHistory } from "react-router";
 import { useTripByIdQuery } from "../hooks/useTripByIdQuery";
 import { useTripUpdateMutation } from "../hooks/useTripUpdateMutation";
 import { useWindowDimensions } from "../hooks/useWindowDimensions";
@@ -51,7 +50,7 @@ const Trip: FC<TripProps> = ({ match }) => {
   const polylinesRef = useRef<string[]>([]);
   const zoomRef = useRef<number>(18);
   const modalRef = useRef<HTMLIonModalElement>(null);
-  const router = useIonRouter();
+  const history = useHistory();
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
   const { height } = useWindowDimensions();
@@ -334,7 +333,7 @@ const Trip: FC<TripProps> = ({ match }) => {
 
           cleanUp();
 
-          router.push("/tabs/home", "root");
+          history.push("/tabs/home");
         }
       }}
     >

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getHours } from "date-fns";
-import { moon, partlySunny, sunny } from "ionicons/icons";
+import { moonOutline, partlySunnyOutline, sunnyOutline } from "ionicons/icons";
 
 export const useGreeting = () => {
   const [today, setToday] = useState(new Date());
@@ -18,17 +18,17 @@ export const useGreeting = () => {
   if (hours < 12)
     return {
       label: "Bom dia",
-      icon: partlySunny,
+      icon: partlySunnyOutline,
     };
 
   if (hours < 18)
     return {
       label: "Boa tarde",
-      icon: sunny,
+      icon: sunnyOutline,
     };
 
   return {
     label: "Boa noite",
-    icon: moon,
+    icon: moonOutline,
   };
 };

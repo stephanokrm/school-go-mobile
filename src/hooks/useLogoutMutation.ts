@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "../lib/axios";
 import { useCsrfQuery } from "./useCsrfQuery";
-import { useIonRouter } from "@ionic/react";
+import { useHistory } from "react-router";
 
 export const useLogoutMutation = () => {
-  const router = useIonRouter();
+  const history = useHistory();
   const queryClient = useQueryClient();
 
   useCsrfQuery();
@@ -12,6 +12,6 @@ export const useLogoutMutation = () => {
   return useMutation(["logout"], async () => {
     await axios.post("/logout");
     await queryClient.invalidateQueries(["getUserByMe"]);
-    await router.push("/login", "root", "replace");
+    await history.push("/login");
   });
 };

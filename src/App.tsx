@@ -23,16 +23,20 @@ import { useAuth } from "./hooks/useAuth";
 import { IonReactRouter } from "@ionic/react-router";
 import { Loading } from "./pages/Loading";
 import { useJsApiLoader } from "@react-google-maps/api";
-import Authenticated from "./pages/Authenticated";
-import Unauthenticated from "./pages/Unauthenticated";
-import { Route } from "react-router-dom";
+import { Redirect, Route } from "react-router-dom";
+import { Login } from "./pages/Login";
+import { Tabs } from "./pages/Tabs";
+import Trip from "./pages/Trip";
+import StudentTrip from "./pages/StudentTrip";
+import { AuthGuard } from "./components/AuthGuard";
+import { Switch } from "react-router";
 
 setupIonicReact({
   mode: "ios",
 });
 
 const App: FC = () => {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading } = useAuth();
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
@@ -40,17 +44,42 @@ const App: FC = () => {
 
   return (
     <IonApp>
-      <IonReactRouter>
-        {isLoading || !isLoaded ? (
-          <Loading />
-        ) : (
+      {isLoading || !isLoaded ? (
+        <Loading />
+      ) : (
+        <IonReactRouter>
           <IonRouterOutlet id="main">
-            <Route
-              component={isAuthenticated ? Authenticated : Unauthenticated}
-            />
+            <Switch>
+              <Route
+                path="/tabs"
+                render={() => (
+                  <AuthGuard>
+                    <Tabs />
+                  </AuthGuard>
+                )}
+              />
+              <Route
+                path="/trip/:trip"
+                render={(props) => (
+                  <AuthGuard>
+                    <Trip {...props} />
+                  </AuthGuard>
+                )}
+              />
+              <Route
+                path="/student/:student/trip/:trip"
+                render={(props) => (
+                  <AuthGuard>
+                    <StudentTrip {...props} />
+                  </AuthGuard>
+                )}
+              />
+              <Route exact path="/login" component={Login} />
+              <Route render={() => <Redirect to="/tabs" />} />
+            </Switch>
           </IonRouterOutlet>
-        )}
-      </IonReactRouter>
+        </IonReactRouter>
+      )}
     </IonApp>
   );
 };

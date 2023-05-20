@@ -2,6 +2,7 @@ import { FC } from "react";
 import {
   IonContent,
   IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -11,6 +12,7 @@ import {
 } from "@ionic/react";
 import { useAuth } from "../hooks/useAuth";
 import { useLogoutMutation } from "../hooks/useLogoutMutation";
+import { logOutOutline, mailOutline, callOutline } from "ionicons/icons";
 
 const Account: FC = () => {
   const { user } = useAuth();
@@ -34,7 +36,16 @@ const Account: FC = () => {
           </IonToolbar>
         </IonHeader>
         <IonList>
-          <IonItem onClick={() => logout()}>
+          <IonItem>
+            <IonIcon icon={mailOutline} slot="start" />
+            <IonLabel>{user?.email}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonIcon icon={callOutline} slot="start" />
+            <IonLabel>{user?.cellPhone}</IonLabel>
+          </IonItem>
+          <IonItem lines="full" onClick={() => logout()}>
+            <IonIcon icon={logOutOutline} slot="start" color="danger" />
             <IonLabel color="danger">Sair</IonLabel>
           </IonItem>
         </IonList>

@@ -45,7 +45,7 @@ const Driver: FC = () => {
   return (
     <div>
       <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-        <IonRefresherContent></IonRefresherContent>
+        <IonRefresherContent />
       </IonRefresher>
       {trips.length === 0 ? (
         <div className="ion-padding">
@@ -87,9 +87,19 @@ const Driver: FC = () => {
                 {trip.itinerary.school.address.description}
               </IonCardContent>
               {!trip.finishedAt && (
-                <IonButton fill="clear" routerLink={`/trip/${trip.id}`}>
-                  {trip.startedAt ? "Continuar" : "Começar"}
-                </IonButton>
+                <div
+                  className="ion-padding-bottom ion-padding-horizontal"
+                  style={{ display: "flex", justifyContent: "end" }}
+                >
+                  <IonButton
+                    size="small"
+                    shape="round"
+                    color={trip.startedAt ? "success" : "primary"}
+                    routerLink={`/trip/${trip.id}`}
+                  >
+                    {trip.startedAt ? "Continuar" : "Começar"}
+                  </IonButton>
+                </div>
               )}
             </IonCard>
           ))}

@@ -36,7 +36,7 @@ const Responsible: FC = () => {
   return (
     <div>
       <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-        <IonRefresherContent></IonRefresherContent>
+        <IonRefresherContent />
       </IonRefresher>
       {students.length === 0 ? (
         <div className="ion-padding">
@@ -77,35 +77,44 @@ const Responsible: FC = () => {
                   <IonCardContent>
                     {trip.itinerary.school.address.description}
                   </IonCardContent>
-                  {!trip.finishedAt &&
-                    trip.startedAt &&
-                    !trip.pivot?.absent && (
-                      <IonButton
-                        fill="clear"
-                        routerLink={`/student/${student.id}/trip/${trip.id}`}
-                      >
-                        Acompanhar
-                      </IonButton>
-                    )}
-                  {!trip.finishedAt &&
-                    !trip.pivot?.embarkedAt &&
-                    !!trip.pivot &&
-                    (trip.pivot.absent ? (
-                      <IonButton
-                        fill="clear"
-                        onClick={() => present({ trip, student })}
-                      >
-                        Irá Comparecer
-                      </IonButton>
-                    ) : (
-                      <IonButton
-                        fill="clear"
-                        color="danger"
-                        onClick={() => absent({ trip, student })}
-                      >
-                        Não Irá Comparecer
-                      </IonButton>
-                    ))}
+                  <div
+                    className="ion-padding-bottom ion-padding-horizontal"
+                    style={{ display: "flex", justifyContent: "end" }}
+                  >
+                    {!trip.finishedAt &&
+                      !trip.pivot?.embarkedAt &&
+                      !!trip.pivot &&
+                      (trip.pivot.absent ? (
+                        <IonButton
+                          size="small"
+                          shape="round"
+                          onClick={() => present({ trip, student })}
+                        >
+                          Irá Comparecer
+                        </IonButton>
+                      ) : (
+                        <IonButton
+                          size="small"
+                          shape="round"
+                          color="danger"
+                          onClick={() => absent({ trip, student })}
+                        >
+                          Não Irá Comparecer
+                        </IonButton>
+                      ))}
+                    {!trip.finishedAt &&
+                      trip.startedAt &&
+                      !trip.pivot?.absent && (
+                        <IonButton
+                          size="small"
+                          shape="round"
+                          color="success"
+                          routerLink={`/student/${student.id}/trip/${trip.id}`}
+                        >
+                          Acompanhar
+                        </IonButton>
+                      )}
+                  </div>
                 </IonCard>
               ))}
             </>
