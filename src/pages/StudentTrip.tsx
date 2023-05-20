@@ -120,8 +120,6 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
       )
         return;
 
-      await window.google.maps.importLibrary("geometry");
-
       const driver = new google.maps.LatLng(driverLatitude, driverLongitude);
       const from = new google.maps.LatLng(originLatitude, originLongitude);
       const to = new google.maps.LatLng(
@@ -142,7 +140,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
           to
         );
 
-      await googleMapRef.current?.setCamera({
+      await googleMapRef.current.setCamera({
         animate: true,
         zoom: distance * 0.01,
         coordinate: {
@@ -217,6 +215,8 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
 
   const loadMap = async () => {
     if (!mapRef.current) return;
+
+    await window.google.maps.importLibrary("geometry");
 
     const currentPosition = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,

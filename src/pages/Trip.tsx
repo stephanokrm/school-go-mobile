@@ -97,6 +97,16 @@ const Trip: FC<TripProps> = ({ match }) => {
           height: zoomRef.current * 3,
         },
       });
+
+      await googleMapRef.current.setCamera({
+        animate: true,
+        angle: 10,
+        zoom: 15,
+        coordinate: {
+          lat: latitude,
+          lng: longitude,
+        },
+      });
     };
 
     addMarker();
@@ -275,6 +285,8 @@ const Trip: FC<TripProps> = ({ match }) => {
 
   const loadMap = async () => {
     if (!mapRef.current) return;
+
+    await window.google.maps.importLibrary("geometry");
 
     const currentPosition = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
