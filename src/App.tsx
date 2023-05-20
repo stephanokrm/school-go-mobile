@@ -1,4 +1,4 @@
-import { IonApp, setupIonicReact } from "@ionic/react";
+import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -25,6 +25,7 @@ import { Loading } from "./pages/Loading";
 import { useJsApiLoader } from "@react-google-maps/api";
 import Authenticated from "./pages/Authenticated";
 import Unauthenticated from "./pages/Unauthenticated";
+import { Route } from "react-router-dom";
 
 setupIonicReact({
   mode: "ios",
@@ -42,10 +43,12 @@ const App: FC = () => {
       <IonReactRouter>
         {isLoading || !isLoaded ? (
           <Loading />
-        ) : isAuthenticated ? (
-          <Authenticated />
         ) : (
-          <Unauthenticated />
+          <IonRouterOutlet id="main">
+            <Route
+              component={isAuthenticated ? Authenticated : Unauthenticated}
+            />
+          </IonRouterOutlet>
         )}
       </IonReactRouter>
     </IonApp>

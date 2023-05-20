@@ -96,12 +96,12 @@ const Authenticated: FC = () => {
   }, []);
 
   return (
-    <IonRouterOutlet id="main">
+    <>
       <Route path="/tabs" component={Tabs} />
       <Route path="/trip/:trip" component={Trip} />
       <Route path="/student/:student/trip/:trip" component={StudentTrip} />
-      <Route render={() => <Redirect to="/tabs" />} />
-    </IonRouterOutlet>
+      <Route render={() => <Redirect to="/tabs/home" />} />
+    </>
   );
 };
 

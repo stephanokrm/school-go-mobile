@@ -20,9 +20,9 @@ export const Tabs = () => {
   return (
     <IonTabs>
       <IonRouterOutlet>
-        <Redirect exact path="/tabs" to="/tabs/home" />
         <Route exact path="/tabs/home" component={Home} />
         <Route exact path="/tabs/account" component={Account} />
+        <Route render={() => <Redirect to="/tabs/home" />} />
       </IonRouterOutlet>
       <IonTabBar slot="bottom">
         <IonTabButton tab="home" href="/tabs/home" onClick={hapticsImpactLight}>
