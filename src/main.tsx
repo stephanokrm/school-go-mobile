@@ -5,7 +5,14 @@ import App from "./App";
 
 const container = document.getElementById("root");
 const root = createRoot(container!);
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      retryOnMount: false,
+    },
+  },
+});
 
 root.render(
   <React.StrictMode>
