@@ -52,14 +52,10 @@ const Home: FC = () => {
           {isDriverAndResponsible ? (
             <IonSegment value={segment} onIonChange={onSegmentChange}>
               <IonSegmentButton value={RoleEnum.Driver}>
-                <IonLabel>
-                  Motorista - <Clock />
-                </IonLabel>
+                <IonLabel>Motorista</IonLabel>
               </IonSegmentButton>
               <IonSegmentButton value={RoleEnum.Responsible}>
-                <IonLabel>
-                  Responsável - <Clock />
-                </IonLabel>
+                <IonLabel>Responsável</IonLabel>
               </IonSegmentButton>
             </IonSegment>
           ) : (
