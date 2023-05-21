@@ -1,24 +1,28 @@
 import { FC, useEffect, useState } from "react";
 
-export const Clock: FC<{
-  options?: Intl.DateTimeFormatOptions;
-}> = ({ options }) => {
-  const [today, setToday] = useState(new Date());
-
-  useEffect(() => {
-    const interval = setInterval(() => setToday(new Date()), 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  const displayTime = new Intl.DateTimeFormat("default", {
+const format = (date: Date, options?: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat("default", {
     day: options?.day,
     month: options?.month,
     hour: "numeric",
     minute: "numeric",
-  }).format(today);
+  }).format(date);
 
-  return <>{displayTime}</>;
+export const Clock: FC<{
+  options?: Intl.DateTimeFormatOptions;
+}> = ({ options }) => {
+  const [dateTime, setDateTime] = useState(() => format(new Date(), options));
+
+  useEffect(() => {
+    const interval = setInterval(
+      () => setDateTime(format(new Date(), options)),
+      1000
+    );
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [options]);
+
+  return <>{dateTime}</>;
 };
