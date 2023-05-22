@@ -70,8 +70,17 @@ const Responsible: FC = () => {
                     <IonCardTitle>{trip.itinerary.school.name}</IonCardTitle>
                     <IonCardSubtitle>
                       {trip.finishedAt
-                        ? `Finalizada às ${trip.finishedAt.toLocaleTimeString()}`
-                        : trip.arriveAt.toLocaleTimeString()}
+                        ? `Finalizada às ${new Intl.DateTimeFormat("default", {
+                            hour: "numeric",
+                            minute: "numeric",
+                          }).format(trip.finishedAt)}`
+                        : `Previsão de chegada às ${new Intl.DateTimeFormat(
+                            "default",
+                            {
+                              hour: "numeric",
+                              minute: "numeric",
+                            }
+                          ).format(trip.arriveAt)}`}
                     </IonCardSubtitle>
                   </IonCardHeader>
                   <IonCardContent>
