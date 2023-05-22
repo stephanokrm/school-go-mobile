@@ -37,6 +37,8 @@ import { useTripUpdateMutation } from "../hooks/useTripUpdateMutation";
 import { useWindowDimensions } from "../hooks/useWindowDimensions";
 import { useTripStudentEmbarkMutation } from "../hooks/useTripStudentEmbarkMutation";
 import { useTripStudentDisembarkMutation } from "../hooks/useTripStudentDisembarkMutation";
+import { useTripStartMutation } from "../hooks/useTripStartMutation";
+import { useTripEndMutation } from "../hooks/useTripEndMutation";
 
 interface TripProps extends RouteComponentProps<{ trip: string }> {}
 
@@ -60,6 +62,8 @@ const Trip: FC<TripProps> = ({ match }) => {
   const { mutate: update } = useTripUpdateMutation();
   const { mutate: embark } = useTripStudentEmbarkMutation();
   const { mutate: disembark } = useTripStudentDisembarkMutation();
+  const { mutate: start } = useTripStartMutation();
+  const { mutate: end } = useTripEndMutation();
 
   const path = trip?.path;
   const round = trip?.round;
@@ -110,13 +114,10 @@ const Trip: FC<TripProps> = ({ match }) => {
   }, [latitude, longitude, isGoogleMapCreated]);
 
   useEffect(() => {
-    const start = async () => {
-      if (trip && !trip.startedAt) {
-        update({
-          ...trip,
-          startedAt: new Date(),
-        });
-      }
+    const startTrip = async () => {
+      if (!trip || trip.startedAt) return;
+
+      start(trip);
     };
     const watchPosition = async () => {
       if (!trip) return;
@@ -146,7 +147,7 @@ const Trip: FC<TripProps> = ({ match }) => {
       );
     };
 
-    start();
+    startTrip();
     watchPosition();
   }, [trip]);
 
@@ -322,16 +323,12 @@ const Trip: FC<TripProps> = ({ match }) => {
 
   const destinationItem = (
     <IonItemSliding
-      onIonDrag={(event) => {
+      onIonDrag={async (event) => {
         if (event.detail.ratio < -2 && trip) {
-          update({
-            ...trip,
-            finishedAt: new Date(),
-          });
+          end(trip);
 
-          event.target.close();
-
-          cleanUp();
+          await event.target.close();
+          await cleanUp();
 
           history.push("/tabs/home");
         }
