@@ -69,6 +69,8 @@ const Driver: FC = () => {
               <IonCardHeader>
                 <IonCardTitle>{trip.itinerary.school.name}</IonCardTitle>
                 <IonCardSubtitle>
+                  {trip.round ? "Volta" : "Ida"}
+                  {" - "}
                   {trip.finishedAt
                     ? `Finalizada às ${new Intl.DateTimeFormat("default", {
                         hour: "numeric",

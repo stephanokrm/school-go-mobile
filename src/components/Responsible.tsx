@@ -2,11 +2,10 @@ import { FC } from "react";
 import {
   IonButton,
   IonCard,
-  IonCardContent,
   IonCardHeader,
   IonCardSubtitle,
-  IonCardTitle,
   IonIcon,
+  IonItem,
   IonLabel,
   IonList,
   IonListHeader,
@@ -57,18 +56,25 @@ const Responsible: FC = () => {
         <>
           {students.map((student) => (
             <>
-              <IonList>
+              <IonList lines="none">
                 <IonListHeader>
                   <IonLabel>
                     {student.firstName} {student.lastName}
                   </IonLabel>
                 </IonListHeader>
+                <IonItem>
+                  <IonLabel>
+                    <h3>{student.school.name}</h3>
+                    <p>{student.school.address.description}</p>
+                  </IonLabel>
+                </IonItem>
               </IonList>
               {student.trips?.map((trip) => (
                 <IonCard key={trip.id}>
                   <IonCardHeader>
-                    <IonCardTitle>{trip.itinerary.school.name}</IonCardTitle>
                     <IonCardSubtitle>
+                      {trip.round ? "Volta" : "Ida"}
+                      {" - "}
                       {trip.finishedAt
                         ? `Finalizada às ${new Intl.DateTimeFormat("default", {
                             hour: "numeric",
@@ -83,9 +89,6 @@ const Responsible: FC = () => {
                           ).format(trip.arriveAt)}`}
                     </IonCardSubtitle>
                   </IonCardHeader>
-                  <IonCardContent>
-                    {trip.itinerary.school.address.description}
-                  </IonCardContent>
                   <div
                     className="ion-padding-bottom ion-padding-horizontal"
                     style={{ display: "flex", justifyContent: "end" }}
