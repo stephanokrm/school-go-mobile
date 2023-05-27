@@ -72,7 +72,7 @@ const Trip: FC<TripProps> = ({ match }) => {
   const destinationAddress = round
     ? trip?.itinerary?.address
     : destination?.address;
-  const students = trip?.students;
+  const students = trip?.students?.filter((student) => !student.pivot?.absent);
   const latitude = trip?.latitude;
   const longitude = trip?.longitude;
   const completedAllStops = students?.every(
