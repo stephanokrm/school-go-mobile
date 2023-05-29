@@ -20,6 +20,7 @@ import {
   IonItemOptions,
   IonItemOption,
   IonChip,
+  IonSpinner,
 } from "@ionic/react";
 import {
   add,
@@ -43,6 +44,7 @@ import { useTripEndMutation } from "../hooks/useTripEndMutation";
 interface TripProps extends RouteComponentProps<{ trip: string }> {}
 
 const Trip: FC<TripProps> = ({ match }) => {
+  const history = useHistory();
   const watchRef = useRef<CallbackID>();
   const mapRef = useRef<HTMLElement>();
   const googleMapRef = useRef<GoogleMap>();
@@ -52,7 +54,6 @@ const Trip: FC<TripProps> = ({ match }) => {
   const polylinesRef = useRef<string[]>([]);
   const zoomRef = useRef<number>(18);
   const modalRef = useRef<HTMLIonModalElement>(null);
-  const history = useHistory();
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
   const { height } = useWindowDimensions();
@@ -60,24 +61,26 @@ const Trip: FC<TripProps> = ({ match }) => {
     refetchInterval: 5000,
   });
   const { mutate: update } = useTripUpdateMutation();
-  const { mutate: embark } = useTripStudentEmbarkMutation();
-  const { mutate: disembark } = useTripStudentDisembarkMutation();
+  const { mutate: embark, isLoading: isMutatingEmbark } =
+    useTripStudentEmbarkMutation();
+  const { mutate: disembark, isLoading: isMutatingDisembark } =
+    useTripStudentDisembarkMutation();
   const { mutate: start } = useTripStartMutation();
   const { mutate: end } = useTripEndMutation();
 
   const path = trip?.path;
   const round = trip?.round;
-  const destination = trip?.itinerary?.school;
-  const destinationName = round ? "Pátio" : destination?.name;
-  const destinationAddress = round
-    ? trip?.itinerary?.address
-    : destination?.address;
-  const students = trip?.students?.filter((student) => !student.pivot?.absent);
   const latitude = trip?.latitude;
   const longitude = trip?.longitude;
-  const completedAllStops = students?.every(
-    (student) => !!student.pivot?.embarkedAt
+  const itinerary = trip?.itinerary;
+  const school = itinerary?.school;
+  const destinationName = round ? "Pátio" : school?.name;
+  const destinationAddress = round ? itinerary?.address : school?.address;
+  const students = trip?.students?.filter((student) => !student.pivot?.absent);
+  const completedAllStops = students?.every((student) =>
+    round ? !!student.pivot?.disembarkedAt : !!student.pivot?.embarkedAt
   );
+  const shouldDisplayDotsSpinner = isMutatingEmbark || isMutatingDisembark;
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
@@ -236,9 +239,10 @@ const Trip: FC<TripProps> = ({ match }) => {
           lat: destinationAddress.latitude,
           lng: destinationAddress.longitude,
         },
+        iconUrl: "finish.png",
         iconSize: {
-          width: zoomRef.current,
-          height: zoomRef.current,
+          width: zoomRef.current * 3,
+          height: zoomRef.current * 3,
         },
       });
     };
@@ -389,52 +393,66 @@ const Trip: FC<TripProps> = ({ match }) => {
           <IonContent className="ion-padding">
             <IonList>
               {completedAllStops && destinationItem}
-              {students?.map((student, index) => (
-                <IonItemSliding
-                  disabled={index > 0 || !!student?.pivot?.embarkedAt}
-                  onIonDrag={(event) => {
-                    if (event.detail.ratio < -2 && trip) {
-                      round
-                        ? disembark({ trip, student })
-                        : embark({ trip, student });
+              {students?.map((student, index) => {
+                const studentHasCompletedTrip = round
+                  ? !!student.pivot?.disembarkedAt
+                  : !!student.pivot?.embarkedAt;
 
-                      event.target.close();
-                    }
-                  }}
-                >
-                  <IonItemOptions side="start">
-                    <IonItemOption expandable>
-                      {round ? "Desembarcou" : "Embarcou"}
-                    </IonItemOption>
-                  </IonItemOptions>
-                  <IonItem>
-                    {index === 0 && !student.pivot?.embarkedAt ? (
-                      <IonIcon
-                        icon={arrowForward}
-                        color="primary"
-                        slot="start"
-                      />
-                    ) : null}
-                    <IonLabel>
-                      <h2>
-                        {student.firstName} {student.lastName}
-                      </h2>
-                      <p>{student.address.description}</p>
-                    </IonLabel>
-                    {!!student?.pivot?.embarkedAt ? (
-                      <IonIcon
-                        icon={checkmarkCircle}
-                        color="primary"
-                        slot="end"
-                      />
-                    ) : (
-                      <IonChip slot="end" color="primary">
-                        {student.pivot?.order}º
-                      </IonChip>
-                    )}
-                  </IonItem>
-                </IonItemSliding>
-              ))}
+                const shouldDisplayArrowRightIcon =
+                  index === 0 &&
+                  !studentHasCompletedTrip &&
+                  !shouldDisplayDotsSpinner;
+
+                return (
+                  <IonItemSliding
+                    disabled={index > 0 || studentHasCompletedTrip}
+                    onIonDrag={(event) => {
+                      if (event.detail.ratio < -1.75 && trip) {
+                        round
+                          ? disembark({ trip, student })
+                          : embark({ trip, student });
+
+                        event.target.close();
+                      }
+                    }}
+                  >
+                    <IonItemOptions side="start">
+                      <IonItemOption expandable>
+                        {round ? "Desembarcou" : "Embarcou"}
+                      </IonItemOption>
+                    </IonItemOptions>
+                    <IonItem>
+                      {shouldDisplayDotsSpinner ? (
+                        <IonSpinner name="dots" slot="start" />
+                      ) : null}
+                      {shouldDisplayArrowRightIcon ? (
+                        <IonIcon
+                          icon={arrowForward}
+                          color="primary"
+                          slot="start"
+                        />
+                      ) : null}
+                      <IonLabel>
+                        <h2>
+                          {student.firstName} {student.lastName}
+                        </h2>
+                        <p>{student.address.description}</p>
+                      </IonLabel>
+                      {studentHasCompletedTrip ? (
+                        <IonIcon
+                          icon={checkmarkCircle}
+                          color="primary"
+                          slot="end"
+                        />
+                      ) : (
+                        <IonChip slot="end" color="primary">
+                          {student.pivot?.order}º
+                        </IonChip>
+                      )}
+                    </IonItem>
+                  </IonItemSliding>
+                );
+              })}
               {!completedAllStops && destinationItem}
             </IonList>
           </IonContent>

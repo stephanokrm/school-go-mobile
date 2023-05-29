@@ -9,6 +9,7 @@ import {
   IonBackButton,
   useIonViewDidEnter,
   useIonViewWillLeave,
+  IonFooter,
 } from "@ionic/react";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation } from "@capacitor/geolocation";
@@ -34,17 +35,16 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   const { height } = useWindowDimensions();
   const { data: student } = useStudentByIdQuery(match.params.student);
   const { data: trip } = useTripByIdQuery(match.params.trip, {
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
   const round = trip?.round;
-  const embarkedAt = student?.pivot?.embarkedAt;
-  const originAddress = round
-    ? trip?.itinerary?.school?.address
-    : student?.address;
-  const destinationAddress = round
-    ? student?.address
-    : trip?.itinerary?.school?.address;
+  const studentHasCompletedTrip = round
+    ? !!student?.pivot?.disembarkedAt
+    : !!student?.pivot?.embarkedAt;
+  const school = trip?.itinerary?.school;
+  const originAddress = round ? school?.address : student?.address;
+  const destinationAddress = round ? student?.address : school?.address;
   const driverLatitude = trip?.latitude;
   const driverLongitude = trip?.longitude;
   const originLatitude = originAddress?.latitude;
@@ -56,17 +56,13 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     if (!isGoogleMapCreated) return;
 
     const addMarker = async () => {
-      if (
-        !googleMapRef.current ||
-        !originLatitude ||
-        !originLongitude ||
-        embarkedAt
-      )
-        return;
+      if (!googleMapRef.current || !originLatitude || !originLongitude) return;
 
       if (originMarkerRef.current) {
         await googleMapRef.current.removeMarker(originMarkerRef.current);
       }
+
+      if (studentHasCompletedTrip) return;
 
       originMarkerRef.current = await googleMapRef.current.addMarker({
         coordinate: {
@@ -77,7 +73,12 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     };
 
     addMarker();
-  }, [embarkedAt, originLatitude, originLongitude, isGoogleMapCreated]);
+  }, [
+    studentHasCompletedTrip,
+    originLatitude,
+    originLongitude,
+    isGoogleMapCreated,
+  ]);
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
@@ -198,6 +199,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
           lat: destinationLatitude,
           lng: destinationLongitude,
         },
+        iconUrl: "finish.png",
         iconSize: {
           width: zoomRef.current,
           height: zoomRef.current,
@@ -271,6 +273,13 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
           }}
         />
       </IonContent>
+      <IonFooter>
+        <IonToolbar>
+          <IonTitle>
+            {round ? "Volta" : "Ida"} - {school?.name}
+          </IonTitle>
+        </IonToolbar>
+      </IonFooter>
     </IonPage>
   );
 };

@@ -11,6 +11,7 @@ import {
   IonListHeader,
   IonRefresher,
   IonRefresherContent,
+  IonSpinner,
   IonText,
   RefresherEventDetail,
 } from "@ionic/react";
@@ -20,11 +21,17 @@ import { useTripStudentPresentMutation } from "../hooks/useTripStudentPresentMut
 import { useTripStudentAbsentMutation } from "../hooks/useTripStudentAbsentMutation";
 
 const Responsible: FC = () => {
-  const { data: students = [], refetch } = useStudentsQuery({
+  const {
+    data: students = [],
+    isLoading: isLoadingStudents,
+    refetch,
+  } = useStudentsQuery({
     responsible: true,
   });
-  const { mutate: absent } = useTripStudentAbsentMutation();
-  const { mutate: present } = useTripStudentPresentMutation();
+  const { mutate: absent, isLoading: isMutatingAbsent } =
+    useTripStudentAbsentMutation();
+  const { mutate: present, isLoading: isMutatingPresent } =
+    useTripStudentPresentMutation();
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
     await refetch();
@@ -37,6 +44,7 @@ const Responsible: FC = () => {
       <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
         <IonRefresherContent />
       </IonRefresher>
+      {isLoadingStudents ? <IonSpinner /> : null}
       {students.length === 0 ? (
         <div className="ion-padding">
           <div style={{ display: "flex", justifyContent: "center" }}>
@@ -102,7 +110,11 @@ const Responsible: FC = () => {
                           shape="round"
                           onClick={() => present({ trip, student })}
                         >
-                          Irá Comparecer
+                          {isMutatingPresent ? (
+                            <IonSpinner name="dots" />
+                          ) : (
+                            "Irá Comparecer"
+                          )}
                         </IonButton>
                       ) : (
                         <IonButton
@@ -111,7 +123,11 @@ const Responsible: FC = () => {
                           color="danger"
                           onClick={() => absent({ trip, student })}
                         >
-                          Não Irá Comparecer
+                          {isMutatingAbsent ? (
+                            <IonSpinner name="dots" />
+                          ) : (
+                            "Não Irá Comparecer"
+                          )}
                         </IonButton>
                       ))}
                     {!trip.finishedAt &&
