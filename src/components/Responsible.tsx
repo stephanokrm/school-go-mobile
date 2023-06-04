@@ -77,74 +77,83 @@ const Responsible: FC = () => {
                   </IonLabel>
                 </IonItem>
               </IonList>
-              {student.trips?.map((trip) => (
-                <IonCard key={trip.id}>
-                  <IonCardHeader>
-                    <IonCardSubtitle>
-                      {trip.round ? "Volta" : "Ida"}
-                      {" - "}
-                      {trip.finishedAt
-                        ? `Finalizada às ${new Intl.DateTimeFormat("default", {
-                            hour: "numeric",
-                            minute: "numeric",
-                          }).format(trip.finishedAt)}`
-                        : `Previsão de chegada às ${new Intl.DateTimeFormat(
-                            "default",
-                            {
-                              hour: "numeric",
-                              minute: "numeric",
-                            }
-                          ).format(trip.arriveAt)}`}
-                    </IonCardSubtitle>
-                  </IonCardHeader>
-                  <div
-                    className="ion-padding-bottom ion-padding-horizontal"
-                    style={{ display: "flex", justifyContent: "end" }}
-                  >
-                    {!trip.finishedAt &&
-                      !trip.pivot?.embarkedAt &&
-                      !!trip.pivot &&
-                      (trip.pivot.absent ? (
-                        <IonButton
-                          size="small"
-                          shape="round"
-                          onClick={() => present({ trip, student })}
-                        >
-                          {isMutatingPresent ? (
-                            <IonSpinner name="dots" />
-                          ) : (
-                            "Irá Comparecer"
-                          )}
-                        </IonButton>
-                      ) : (
-                        <IonButton
-                          size="small"
-                          shape="round"
-                          color="danger"
-                          onClick={() => absent({ trip, student })}
-                        >
-                          {isMutatingAbsent ? (
-                            <IonSpinner name="dots" />
-                          ) : (
-                            "Não Irá Comparecer"
-                          )}
-                        </IonButton>
-                      ))}
-                    {!trip.finishedAt &&
-                      trip.startedAt &&
-                      !trip.pivot?.absent && (
-                        <IonButton
-                          size="small"
-                          shape="round"
-                          color="success"
-                          routerLink={`/student/${student.id}/trip/${trip.id}`}
-                        >
-                          Acompanhar
-                        </IonButton>
-                      )}
-                  </div>
-                </IonCard>
-              ))}
+              {student.trips?.map((trip) => {
+                const studentHasNotCompletedTrip = trip.round
+                  ? !trip.pivot?.disembarkedAt
+                  : !trip.pivot?.embarkedAt;
+
+                return (
+                  <IonCard key={trip.id}>
+                    <IonCardHeader>
+                      <IonCardSubtitle>
+                        {trip.round ? "Volta" : "Ida"}
+                        {" - "}
+                        {trip.finishedAt
+                          ? `Finalizada às ${new Intl.DateTimeFormat(
+                              "default",
+                              {
+                                hour: "numeric",
+                                minute: "numeric",
+                              }
+                            ).format(trip.finishedAt)}`
+                          : `Previsão de chegada às ${new Intl.DateTimeFormat(
+                              "default",
+                              {
+                                hour: "numeric",
+                                minute: "numeric",
+                              }
+                            ).format(trip.arriveAt)}`}
+                      </IonCardSubtitle>
+                    </IonCardHeader>
+                    <div
+                      className="ion-padding-bottom ion-padding-horizontal"
+                      style={{ display: "flex", justifyContent: "end" }}
+                    >
+                      {!trip.finishedAt &&
+                        studentHasNotCompletedTrip &&
+                        !!trip.pivot &&
+                        (trip.pivot.absent ? (
+                          <IonButton
+                            size="small"
+                            shape="round"
+                            onClick={() => present({ trip, student })}
+                          >
+                            {isMutatingPresent ? (
+                              <IonSpinner name="dots" />
+                            ) : (
+                              "Irá Comparecer"
+                            )}
+                          </IonButton>
+                        ) : (
+                          <IonButton
+                            size="small"
+                            shape="round"
+                            color="danger"
+                            onClick={() => absent({ trip, student })}
+                          >
+                            {isMutatingAbsent ? (
+                              <IonSpinner name="dots" />
+                            ) : (
+                              "Não Irá Comparecer"
+                            )}
+                          </IonButton>
+                        ))}
+                      {!trip.finishedAt &&
+                        trip.startedAt &&
+                        !trip.pivot?.absent && (
+                          <IonButton
+                            size="small"
+                            shape="round"
+                            color="success"
+                            routerLink={`/student/${student.id}/trip/${trip.id}`}
+                          >
+                            Acompanhar
+                          </IonButton>
+                        )}
+                    </div>
+                  </IonCard>
+                );
+              })}
             </>
           ))}
         </>

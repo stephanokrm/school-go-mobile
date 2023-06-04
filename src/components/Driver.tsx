@@ -91,7 +91,7 @@ const Driver: FC = () => {
               {!trip.finishedAt && (
                 <div
                   className="ion-padding-bottom ion-padding-horizontal"
-                  style={{ display: "flex", justifyContent: "end" }}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                   <IonButton
                     size="small"

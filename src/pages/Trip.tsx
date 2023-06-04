@@ -16,19 +16,11 @@ import {
   IonFab,
   IonFabButton,
   IonIcon,
-  IonItemSliding,
-  IonItemOptions,
-  IonItemOption,
   IonChip,
   IonSpinner,
+  IonButton,
 } from "@ionic/react";
-import {
-  add,
-  remove,
-  checkmarkCircle,
-  arrowForward,
-  flag,
-} from "ionicons/icons";
+import { add, remove, checkmarkCircle, flag } from "ionicons/icons";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation, CallbackID } from "@capacitor/geolocation";
 import "./Trip.css";
@@ -52,7 +44,7 @@ const Trip: FC<TripProps> = ({ match }) => {
   const destinationMarkerRef = useRef<string>();
   const studentMarkersRef = useRef<string[]>([]);
   const polylinesRef = useRef<string[]>([]);
-  const zoomRef = useRef<number>(18);
+  const zoomRef = useRef<number>(15);
   const modalRef = useRef<HTMLIonModalElement>(null);
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
@@ -181,11 +173,14 @@ const Trip: FC<TripProps> = ({ match }) => {
         await googleMapRef.current.removePolylines(polylinesRef.current);
       }
 
+      const zoom = zoomRef.current - 10;
+      const strokeWeight = zoom < 1 ? 1 : zoom;
+
       polylinesRef.current = await googleMapRef.current.addPolylines([
         {
-          strokeColor: "#ffc409",
-          strokeWeight: 15,
           path,
+          strokeColor: "#ffc409",
+          strokeWeight,
         },
       ]);
     };
@@ -204,7 +199,9 @@ const Trip: FC<TripProps> = ({ match }) => {
       }
 
       const markers = students
-        .filter((student) => !student.pivot?.embarkedAt)
+        .filter((student) =>
+          round ? !student.pivot?.disembarkedAt : !student.pivot?.embarkedAt
+        )
         .map((student) => ({
           coordinate: {
             lat: student.address.latitude,
@@ -222,7 +219,7 @@ const Trip: FC<TripProps> = ({ match }) => {
     };
 
     addMarkers();
-  }, [students, isGoogleMapCreated]);
+  }, [round, students, isGoogleMapCreated]);
 
   useEffect(() => {
     if (!isGoogleMapCreated) return;
@@ -241,8 +238,8 @@ const Trip: FC<TripProps> = ({ match }) => {
         },
         iconUrl: "finish.png",
         iconSize: {
-          width: zoomRef.current * 3,
-          height: zoomRef.current * 3,
+          width: zoomRef.current * 2,
+          height: zoomRef.current * 2,
         },
       });
     };
@@ -326,31 +323,28 @@ const Trip: FC<TripProps> = ({ match }) => {
   }, []);
 
   const destinationItem = (
-    <IonItemSliding
-      onIonDrag={async (event) => {
-        if (event.detail.ratio < -2 && trip) {
+    <IonItem>
+      <IonButton
+        slot="start"
+        color="primary"
+        shape="round"
+        onClick={async () => {
+          if (!trip) return;
+
           end(trip);
 
-          await event.target.close();
           await cleanUp();
 
           history.push("/tabs/home");
-        }
-      }}
-    >
-      <IonItemOptions side="start">
-        <IonItemOption expandable color="danger">
-          Finalizar
-        </IonItemOption>
-      </IonItemOptions>
-      <IonItem>
-        <IonIcon icon={flag} color="primary" slot="start" />
-        <IonLabel>
-          <h2>{destinationName}</h2>
-          <p>{destinationAddress?.description}</p>
-        </IonLabel>
-      </IonItem>
-    </IonItemSliding>
+        }}
+      >
+        <IonIcon icon={flag} slot="icon-only" />
+      </IonButton>
+      <IonLabel>
+        <h2>{destinationName}</h2>
+        <p>{destinationAddress?.description}</p>
+      </IonLabel>
+    </IonItem>
   );
 
   return (
@@ -398,59 +392,51 @@ const Trip: FC<TripProps> = ({ match }) => {
                   ? !!student.pivot?.disembarkedAt
                   : !!student.pivot?.embarkedAt;
 
+                const nextStudent = index === 0;
                 const shouldDisplayArrowRightIcon =
-                  index === 0 &&
+                  nextStudent &&
                   !studentHasCompletedTrip &&
                   !shouldDisplayDotsSpinner;
 
                 return (
-                  <IonItemSliding
-                    disabled={index > 0 || studentHasCompletedTrip}
-                    onIonDrag={(event) => {
-                      if (event.detail.ratio < -1.75 && trip) {
-                        round
-                          ? disembark({ trip, student })
-                          : embark({ trip, student });
+                  <IonItem>
+                    {shouldDisplayDotsSpinner && nextStudent ? (
+                      <IonSpinner name="dots" slot="start" />
+                    ) : null}
+                    {shouldDisplayArrowRightIcon ? (
+                      <IonButton
+                        slot="start"
+                        color="primary"
+                        shape="round"
+                        onClick={() => {
+                          if (!trip) return;
 
-                        event.target.close();
-                      }
-                    }}
-                  >
-                    <IonItemOptions side="start">
-                      <IonItemOption expandable>
-                        {round ? "Desembarcou" : "Embarcou"}
-                      </IonItemOption>
-                    </IonItemOptions>
-                    <IonItem>
-                      {shouldDisplayDotsSpinner ? (
-                        <IonSpinner name="dots" slot="start" />
-                      ) : null}
-                      {shouldDisplayArrowRightIcon ? (
-                        <IonIcon
-                          icon={arrowForward}
-                          color="primary"
-                          slot="start"
-                        />
-                      ) : null}
-                      <IonLabel>
-                        <h2>
-                          {student.firstName} {student.lastName}
-                        </h2>
-                        <p>{student.address.description}</p>
-                      </IonLabel>
-                      {studentHasCompletedTrip ? (
-                        <IonIcon
-                          icon={checkmarkCircle}
-                          color="primary"
-                          slot="end"
-                        />
-                      ) : (
-                        <IonChip slot="end" color="primary">
-                          {student.pivot?.order}º
-                        </IonChip>
-                      )}
-                    </IonItem>
-                  </IonItemSliding>
+                          round
+                            ? disembark({ trip, student })
+                            : embark({ trip, student });
+                        }}
+                      >
+                        <IonIcon icon={checkmarkCircle} slot="icon-only" />
+                      </IonButton>
+                    ) : null}
+                    <IonLabel>
+                      <h2>
+                        {student.firstName} {student.lastName}
+                      </h2>
+                      <p>{student.address.description}</p>
+                    </IonLabel>
+                    {studentHasCompletedTrip ? (
+                      <IonIcon
+                        icon={checkmarkCircle}
+                        color="primary"
+                        slot="end"
+                      />
+                    ) : (
+                      <IonChip slot="end" color="primary">
+                        {student.pivot?.order}º
+                      </IonChip>
+                    )}
+                  </IonItem>
                 );
               })}
               {!completedAllStops && destinationItem}

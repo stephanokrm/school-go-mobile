@@ -201,8 +201,8 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
         },
         iconUrl: "finish.png",
         iconSize: {
-          width: zoomRef.current * 3,
-          height: zoomRef.current * 3,
+          width: zoomRef.current * 2,
+          height: zoomRef.current * 2,
         },
       });
     };
