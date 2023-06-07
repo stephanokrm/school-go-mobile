@@ -22,18 +22,15 @@ export function ControlledIonInput<FieldValue extends FieldValues>(
       control={control}
       render={({ field, fieldState }) => (
         <IonInput
-          {...field}
           className={`${fieldState.invalid ? "ion-invalid" : "ion-valid"} ${
             fieldState.isTouched && "ion-touched"
           }`}
           errorText={fieldState.error?.message}
           label={label}
           labelPlacement="floating"
-          onIonBlur={field.onBlur}
           onIonChange={field.onChange}
           placeholder={placeholder}
           type={type}
-          value={field.value ?? ""}
         />
       )}
     />

@@ -17,8 +17,8 @@ import { ControlledIonInput } from "../components/ControlledIonInput";
 
 const loginSchema = yup
   .object({
-    email: yup.string().email().required(),
-    password: yup.string().required(),
+    email: yup.string().email().required("O campo e-mail é obrigatório."),
+    password: yup.string().required("O campo senha é obrigatório."),
   })
   .required();
 

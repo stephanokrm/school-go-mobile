@@ -44,8 +44,19 @@ const Responsible: FC = () => {
       <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
         <IonRefresherContent />
       </IonRefresher>
-      {isLoadingStudents ? <IonSpinner /> : null}
-      {students.length === 0 ? (
+      {isLoadingStudents ? (
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <IonSpinner color="primary" />
+        </div>
+      ) : null}
+      {students.length === 0 && !isLoadingStudents ? (
         <div className="ion-padding">
           <div style={{ display: "flex", justifyContent: "center" }}>
             <IonIcon
@@ -60,13 +71,14 @@ const Responsible: FC = () => {
             </IonText>
           </div>
         </div>
-      ) : (
+      ) : null}
+      {students.length > 0 && !isLoadingStudents ? (
         <>
           {students.map((student) => (
             <>
               <IonList lines="none">
                 <IonListHeader>
-                  <IonLabel>
+                  <IonLabel className="ion-no-margin">
                     {student.firstName} {student.lastName}
                   </IonLabel>
                 </IonListHeader>
@@ -157,7 +169,7 @@ const Responsible: FC = () => {
             </>
           ))}
         </>
-      )}
+      ) : null}
     </div>
   );
 };

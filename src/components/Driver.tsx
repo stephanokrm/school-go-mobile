@@ -11,6 +11,7 @@ import {
   IonRefresher,
   IonRefresherContent,
   RefresherEventDetail,
+  IonSpinner,
 } from "@ionic/react";
 import { busOutline } from "ionicons/icons";
 import { useGetTripsQuery } from "../hooks/useGetTripsQuery";
@@ -28,7 +29,11 @@ const registerGeolocation = async () => {
 };
 
 const Driver: FC = () => {
-  const { data: trips = [], refetch } = useGetTripsQuery({
+  const {
+    data: trips = [],
+    refetch,
+    isLoading: isLoadingTrips,
+  } = useGetTripsQuery({
     driver: true,
   });
 
@@ -47,7 +52,19 @@ const Driver: FC = () => {
       <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
         <IonRefresherContent />
       </IonRefresher>
-      {trips.length === 0 ? (
+      {isLoadingTrips ? (
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <IonSpinner color="primary" />
+        </div>
+      ) : null}
+      {trips.length === 0 && !isLoadingTrips ? (
         <div className="ion-padding">
           <div style={{ display: "flex", justifyContent: "center" }}>
             <IonIcon
@@ -62,7 +79,8 @@ const Driver: FC = () => {
             </IonText>
           </div>
         </div>
-      ) : (
+      ) : null}
+      {trips.length > 0 && !isLoadingTrips ? (
         <>
           {trips.map((trip) => (
             <IonCard key={trip.id}>
@@ -106,7 +124,7 @@ const Driver: FC = () => {
             </IonCard>
           ))}
         </>
-      )}
+      ) : null}
     </div>
   );
 };
