@@ -19,6 +19,7 @@ import { busOutline } from "ionicons/icons";
 import { useStudentsQuery } from "../hooks/useStudentsQuery";
 import { useTripStudentPresentMutation } from "../hooks/useTripStudentPresentMutation";
 import { useTripStudentAbsentMutation } from "../hooks/useTripStudentAbsentMutation";
+import { format } from "date-fns";
 
 const Responsible: FC = () => {
   const {
@@ -101,20 +102,11 @@ const Responsible: FC = () => {
                         {trip.round ? "Volta" : "Ida"}
                         {" - "}
                         {trip.finishedAt
-                          ? `Finalizada às ${new Intl.DateTimeFormat(
-                              "default",
-                              {
-                                hour: "numeric",
-                                minute: "numeric",
-                              }
-                            ).format(trip.finishedAt)}`
-                          : `Previsão de chegada às ${new Intl.DateTimeFormat(
-                              "default",
-                              {
-                                hour: "numeric",
-                                minute: "numeric",
-                              }
-                            ).format(trip.arriveAt)}`}
+                          ? `Finalizada às ${format(trip.finishedAt, "H:mm")}`
+                          : `Previsão de chegada às ${format(
+                              trip.arriveAt,
+                              "H:mm"
+                            )}`}
                       </IonCardSubtitle>
                     </IonCardHeader>
                     <div

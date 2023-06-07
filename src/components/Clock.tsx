@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 
 const format = (date: Date, options?: Intl.DateTimeFormatOptions) =>
-  new Intl.DateTimeFormat("default", {
+  new Intl.DateTimeFormat("pt-BR", {
     day: options?.day,
     month: options?.month,
     hour: "numeric",
