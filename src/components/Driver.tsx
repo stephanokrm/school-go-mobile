@@ -92,7 +92,9 @@ const Driver: FC = () => {
                   {" - "}
                   {trip.finishedAt
                     ? `Finalizada às ${format(trip.finishedAt, "H:mm")}`
-                    : `Previsão de chegada às ${format(trip.arriveAt, "H:mm")}`}
+                    : `Previsão de ${
+                        trip.round ? "saída" : "chegada"
+                      } às ${format(trip.arriveAt, "H:mm")}`}
                 </IonCardSubtitle>
               </IonCardHeader>
               <IonCardContent>

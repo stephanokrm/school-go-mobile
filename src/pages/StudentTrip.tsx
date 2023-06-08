@@ -135,15 +135,15 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
 
       const center = bounds.getCenter();
 
-      const distance =
-        window.google.maps.geometry.spherical.computeDistanceBetween(
-          driver,
-          to
-        );
+      const area = window.google.maps.geometry.spherical.computeArea([
+        from,
+        to,
+        driver,
+      ]);
 
       await googleMapRef.current.setCamera({
         animate: true,
-        zoom: distance * 0.01,
+        zoom: 60 / area,
         coordinate: {
           lat: center.lat(),
           lng: center.lng(),
@@ -230,6 +230,10 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
       apiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
       config: {
         gestureHandling: "none",
+        disableDoubleClickZoom: true,
+        disableDefaultUI: true,
+        scrollwheel: false,
+        zoomControl: false,
         center: {
           lat: currentPosition.coords.latitude,
           lng: currentPosition.coords.longitude,
@@ -273,7 +277,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
           }}
         />
       </IonContent>
-      <IonFooter>
+      <IonFooter translucent>
         <IonToolbar>
           <IonTitle>
             {round ? "Volta" : "Ida"} - {school?.name}

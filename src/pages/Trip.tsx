@@ -324,22 +324,24 @@ const Trip: FC<TripProps> = ({ match }) => {
 
   const destinationItem = (
     <IonItem>
-      <IonButton
-        slot="start"
-        color="primary"
-        shape="round"
-        onClick={async () => {
-          if (!trip) return;
+      {completedAllStops ? (
+        <IonButton
+          slot="start"
+          color="primary"
+          shape="round"
+          onClick={async () => {
+            if (!trip) return;
 
-          end(trip);
+            end(trip);
 
-          await cleanUp();
+            await cleanUp();
 
-          history.push("/tabs/home");
-        }}
-      >
-        <IonIcon icon={flag} slot="icon-only" />
-      </IonButton>
+            history.push("/tabs/home");
+          }}
+        >
+          <IonIcon icon={flag} slot="icon-only" />
+        </IonButton>
+      ) : null}
       <IonLabel>
         <h2>{destinationName}</h2>
         <p>{destinationAddress?.description}</p>

@@ -103,48 +103,45 @@ const Responsible: FC = () => {
                         {" - "}
                         {trip.finishedAt
                           ? `Finalizada às ${format(trip.finishedAt, "H:mm")}`
-                          : `Previsão de chegada às ${format(
-                              trip.arriveAt,
-                              "H:mm"
-                            )}`}
+                          : `Previsão de ${
+                              trip.round ? "saída" : "chegada"
+                            } às ${format(trip.arriveAt, "H:mm")}`}
                       </IonCardSubtitle>
                     </IonCardHeader>
-                    <div
-                      className="ion-padding-bottom ion-padding-horizontal"
-                      style={{ display: "flex", justifyContent: "end" }}
-                    >
-                      {!trip.finishedAt &&
-                        studentHasNotCompletedTrip &&
-                        !!trip.pivot &&
-                        (trip.pivot.absent ? (
-                          <IonButton
-                            size="small"
-                            shape="round"
-                            onClick={() => present({ trip, student })}
-                          >
-                            {isMutatingPresent ? (
-                              <IonSpinner name="dots" />
-                            ) : (
-                              "Irá Comparecer"
-                            )}
-                          </IonButton>
-                        ) : (
-                          <IonButton
-                            size="small"
-                            shape="round"
-                            color="danger"
-                            onClick={() => absent({ trip, student })}
-                          >
-                            {isMutatingAbsent ? (
-                              <IonSpinner name="dots" />
-                            ) : (
-                              "Não Irá Comparecer"
-                            )}
-                          </IonButton>
-                        ))}
-                      {!trip.finishedAt &&
-                        trip.startedAt &&
-                        !trip.pivot?.absent && (
+                    {!trip.finishedAt ? (
+                      <div
+                        className="ion-padding-bottom ion-padding-horizontal"
+                        style={{ display: "flex", justifyContent: "end" }}
+                      >
+                        {studentHasNotCompletedTrip ? (
+                          trip.pivot?.absent ? (
+                            <IonButton
+                              size="small"
+                              shape="round"
+                              onClick={() => present({ trip, student })}
+                            >
+                              {isMutatingPresent ? (
+                                <IonSpinner name="dots" />
+                              ) : (
+                                "Irá Comparecer"
+                              )}
+                            </IonButton>
+                          ) : (
+                            <IonButton
+                              size="small"
+                              shape="round"
+                              color="danger"
+                              onClick={() => absent({ trip, student })}
+                            >
+                              {isMutatingAbsent ? (
+                                <IonSpinner name="dots" />
+                              ) : (
+                                "Não Irá Comparecer"
+                              )}
+                            </IonButton>
+                          )
+                        ) : null}
+                        {trip.startedAt && !trip.pivot?.absent && (
                           <IonButton
                             size="small"
                             shape="round"
@@ -154,7 +151,8 @@ const Responsible: FC = () => {
                             Acompanhar
                           </IonButton>
                         )}
-                    </div>
+                      </div>
+                    ) : null}
                   </IonCard>
                 );
               })}
