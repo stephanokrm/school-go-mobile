@@ -12,6 +12,7 @@ export const useLogoutMutation = () => {
   return useMutation(["logout"], async () => {
     await axios.post("/logout");
     await queryClient.invalidateQueries(["getUserByMe"]);
+    await queryClient.clear();
     await history.push("/login");
   });
 };

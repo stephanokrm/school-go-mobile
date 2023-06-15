@@ -18,7 +18,6 @@ import "./Trip.css";
 import { RouteComponentProps } from "react-router";
 import { useTripByIdQuery } from "../hooks/useTripByIdQuery";
 import { useWindowDimensions } from "../hooks/useWindowDimensions";
-import { useStudentByIdQuery } from "../hooks/useStudentByIdQuery";
 
 interface TripProps
   extends RouteComponentProps<{ student: string; trip: string }> {}
@@ -34,9 +33,6 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
   const { height } = useWindowDimensions();
-  const { data: student, isLoading: isLoadingStudent } = useStudentByIdQuery(
-    match.params.student
-  );
   const { data: trip, isLoading: isLoadingTrip } = useTripByIdQuery(
     match.params.trip,
     {
@@ -44,6 +40,9 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     }
   );
 
+  const student = trip?.students?.find(
+    (student) => student.id.toString() === match.params.student
+  );
   const round = trip?.round;
   const studentHasCompletedTrip = round
     ? !!student?.pivot?.disembarkedAt
@@ -136,20 +135,23 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
 
       const bounds = new window.google.maps.LatLngBounds();
       bounds.extend(driver);
-      bounds.extend(from);
       bounds.extend(to);
+
+      if (!studentHasCompletedTrip) {
+        bounds.extend(from);
+      }
 
       const center = bounds.getCenter();
 
       const area = window.google.maps.geometry.spherical.computeArea([
-        from,
+        ...(studentHasCompletedTrip ? [] : [from]),
         to,
         driver,
       ]);
 
       await googleMapRef.current.setCamera({
         animate: true,
-        zoom: 75 / area,
+        zoom: 25 / area,
         coordinate: {
           lat: center.lat(),
           lng: center.lng(),
@@ -165,6 +167,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
     originLongitude,
     destinationLatitude,
     destinationLongitude,
+    studentHasCompletedTrip,
     isGoogleMapCreated,
   ]);
 
@@ -269,7 +272,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
             <IonBackButton text="Voltar" />
           </IonButtons>
           <IonTitle>
-            {isLoadingStudent ? (
+            {isLoadingTrip ? (
               <IonSpinner name="dots" />
             ) : (
               `${student?.firstName} ${student?.lastName}`
