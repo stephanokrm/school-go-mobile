@@ -10,6 +10,7 @@ import {
   useIonViewDidEnter,
   useIonViewWillLeave,
   IonFooter,
+  IonSpinner,
 } from "@ionic/react";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation } from "@capacitor/geolocation";
@@ -33,10 +34,15 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
   const { height } = useWindowDimensions();
-  const { data: student } = useStudentByIdQuery(match.params.student);
-  const { data: trip } = useTripByIdQuery(match.params.trip, {
-    refetchInterval: 5000,
-  });
+  const { data: student, isLoading: isLoadingStudent } = useStudentByIdQuery(
+    match.params.student
+  );
+  const { data: trip, isLoading: isLoadingTrip } = useTripByIdQuery(
+    match.params.trip,
+    {
+      refetchInterval: 5000,
+    }
+  );
 
   const round = trip?.round;
   const studentHasCompletedTrip = round
@@ -143,7 +149,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
 
       await googleMapRef.current.setCamera({
         animate: true,
-        zoom: 60 / area,
+        zoom: 75 / area,
         coordinate: {
           lat: center.lat(),
           lng: center.lng(),
@@ -263,7 +269,11 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
             <IonBackButton text="Voltar" />
           </IonButtons>
           <IonTitle>
-            {student?.firstName} {student?.lastName}
+            {isLoadingStudent ? (
+              <IonSpinner name="dots" />
+            ) : (
+              `${student?.firstName} ${student?.lastName}`
+            )}
           </IonTitle>
         </IonToolbar>
       </IonHeader>
@@ -280,7 +290,11 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
       <IonFooter translucent>
         <IonToolbar>
           <IonTitle>
-            {round ? "Volta" : "Ida"} - {school?.name}
+            {isLoadingTrip ? (
+              <IonSpinner name="dots" />
+            ) : (
+              `${round ? "Volta" : "Ida"} - ${school?.name}`
+            )}
           </IonTitle>
         </IonToolbar>
       </IonFooter>

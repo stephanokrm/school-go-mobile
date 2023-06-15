@@ -13,14 +13,16 @@ import {
   IonBackButton,
   useIonViewDidEnter,
   useIonViewWillLeave,
-  IonFab,
-  IonFabButton,
   IonIcon,
-  IonChip,
   IonSpinner,
   IonButton,
 } from "@ionic/react";
-import { add, remove, checkmarkCircle, flag } from "ionicons/icons";
+import {
+  flagOutline,
+  enterOutline,
+  exitOutline,
+  checkmarkCircleOutline,
+} from "ionicons/icons";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation, CallbackID } from "@capacitor/geolocation";
 import "./Trip.css";
@@ -49,9 +51,12 @@ const Trip: FC<TripProps> = ({ match }) => {
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
 
   const { height } = useWindowDimensions();
-  const { data: trip } = useTripByIdQuery(match.params.trip, {
-    refetchInterval: 5000,
-  });
+  const { data: trip, isLoading: isLoadingTrip } = useTripByIdQuery(
+    match.params.trip,
+    {
+      refetchInterval: 5000,
+    }
+  );
   const { mutate: update } = useTripUpdateMutation();
   const { mutate: embark, isLoading: isMutatingEmbark } =
     useTripStudentEmbarkMutation();
@@ -247,32 +252,6 @@ const Trip: FC<TripProps> = ({ match }) => {
     addMarker();
   }, [destinationAddress, isGoogleMapCreated]);
 
-  const removeZoom = async () => {
-    if (!googleMapRef.current) return;
-
-    const zoom = zoomRef.current - 1;
-
-    zoomRef.current = zoom;
-
-    await googleMapRef.current.setCamera({
-      animate: true,
-      zoom,
-    });
-  };
-
-  const addZoom = async () => {
-    if (!googleMapRef.current) return;
-
-    const zoom = zoomRef.current + 1;
-
-    zoomRef.current = zoom;
-
-    await googleMapRef.current.setCamera({
-      animate: true,
-      zoom,
-    });
-  };
-
   const cleanUp = async () => {
     await googleMapRef.current?.destroy();
     await modalRef.current?.dismiss();
@@ -324,11 +303,17 @@ const Trip: FC<TripProps> = ({ match }) => {
 
   const destinationItem = (
     <IonItem>
+      <IonLabel>
+        <h2>{destinationName}</h2>
+        <p>{destinationAddress?.description}</p>
+      </IonLabel>
       {completedAllStops ? (
         <IonButton
-          slot="start"
-          color="primary"
+          slot="end"
+          color="success"
           shape="round"
+          size="small"
+          style={{ height: "30px" }}
           onClick={async () => {
             if (!trip) return;
 
@@ -339,13 +324,16 @@ const Trip: FC<TripProps> = ({ match }) => {
             history.push("/tabs/home");
           }}
         >
-          <IonIcon icon={flag} slot="icon-only" />
+          <IonIcon
+            icon={flagOutline}
+            slot="start"
+            style={{ paddingLeft: "5px" }}
+          />
+          Finalizar
         </IonButton>
-      ) : null}
-      <IonLabel>
-        <h2>{destinationName}</h2>
-        <p>{destinationAddress?.description}</p>
-      </IonLabel>
+      ) : (
+        <IonIcon icon={flagOutline} color="primary" slot="end" />
+      )}
     </IonItem>
   );
 
@@ -368,16 +356,6 @@ const Trip: FC<TripProps> = ({ match }) => {
             height: "100vh",
           }}
         />
-        <IonFab slot="fixed" vertical="center" horizontal="start">
-          <IonFabButton size="small" onClick={removeZoom}>
-            <IonIcon icon={remove} />
-          </IonFabButton>
-        </IonFab>
-        <IonFab slot="fixed" vertical="center" horizontal="end">
-          <IonFabButton size="small" onClick={addZoom}>
-            <IonIcon icon={add} />
-          </IonFabButton>
-        </IonFab>
         <IonModal
           backdropBreakpoint={0.5}
           backdropDismiss={false}
@@ -387,62 +365,71 @@ const Trip: FC<TripProps> = ({ match }) => {
           ref={modalRef}
         >
           <IonContent className="ion-padding">
-            <IonList>
-              {completedAllStops && destinationItem}
-              {students?.map((student, index) => {
-                const studentHasCompletedTrip = round
-                  ? !!student.pivot?.disembarkedAt
-                  : !!student.pivot?.embarkedAt;
+            {isLoadingTrip ? (
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <IonSpinner name="dots" />
+              </div>
+            ) : (
+              <IonList>
+                {completedAllStops && destinationItem}
+                {students?.map((student, index) => {
+                  const studentHasCompletedTrip = round
+                    ? !!student.pivot?.disembarkedAt
+                    : !!student.pivot?.embarkedAt;
 
-                const nextStudent = index === 0;
-                const shouldDisplayArrowRightIcon =
-                  nextStudent &&
-                  !studentHasCompletedTrip &&
-                  !shouldDisplayDotsSpinner;
+                  const isNextStudent = index === 0;
+                  const shouldDisplayActionButton =
+                    isNextStudent && !studentHasCompletedTrip;
 
-                return (
-                  <IonItem>
-                    {shouldDisplayDotsSpinner && nextStudent ? (
-                      <IonSpinner name="dots" slot="start" />
-                    ) : null}
-                    {shouldDisplayArrowRightIcon ? (
-                      <IonButton
-                        slot="start"
-                        color="primary"
-                        shape="round"
-                        onClick={() => {
-                          if (!trip) return;
+                  return (
+                    <IonItem>
+                      <IonLabel>
+                        <h2>
+                          {student.firstName} {student.lastName}
+                        </h2>
+                        <p>{student.address.description}</p>
+                      </IonLabel>
+                      {shouldDisplayActionButton ? (
+                        <IonButton
+                          slot="end"
+                          color="primary"
+                          shape="round"
+                          size="small"
+                          style={{ height: "30px" }}
+                          onClick={() => {
+                            if (!trip) return;
 
-                          round
-                            ? disembark({ trip, student })
-                            : embark({ trip, student });
-                        }}
-                      >
-                        <IonIcon icon={checkmarkCircle} slot="icon-only" />
-                      </IonButton>
-                    ) : null}
-                    <IonLabel>
-                      <h2>
-                        {student.firstName} {student.lastName}
-                      </h2>
-                      <p>{student.address.description}</p>
-                    </IonLabel>
-                    {studentHasCompletedTrip ? (
-                      <IonIcon
-                        icon={checkmarkCircle}
-                        color="primary"
-                        slot="end"
-                      />
-                    ) : (
-                      <IonChip slot="end" color="primary">
-                        {student.pivot?.order}º
-                      </IonChip>
-                    )}
-                  </IonItem>
-                );
-              })}
-              {!completedAllStops && destinationItem}
-            </IonList>
+                            round
+                              ? disembark({ trip, student })
+                              : embark({ trip, student });
+                          }}
+                        >
+                          {shouldDisplayDotsSpinner ? (
+                            <IonSpinner name="dots" />
+                          ) : (
+                            <>
+                              <IonIcon
+                                icon={round ? exitOutline : enterOutline}
+                                slot="start"
+                                style={{ paddingLeft: "5px" }}
+                              />
+                              {round ? "Desembarcou" : "Embarcou"}
+                            </>
+                          )}
+                        </IonButton>
+                      ) : studentHasCompletedTrip ? (
+                        <IonIcon
+                          icon={checkmarkCircleOutline}
+                          color="primary"
+                          slot="end"
+                        />
+                      ) : null}
+                    </IonItem>
+                  );
+                })}
+                {!completedAllStops && destinationItem}
+              </IonList>
+            )}
           </IonContent>
         </IonModal>
       </IonContent>

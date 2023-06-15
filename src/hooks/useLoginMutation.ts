@@ -11,7 +11,7 @@ export const useLoginMutation = () => {
   const history = useHistory();
   const queryClient = useQueryClient();
 
-  useCsrfQuery();
+  const { refetch } = useCsrfQuery();
 
   return useMutation<Response, BackendError, LoginForm>(
     ["login"],
@@ -22,6 +22,13 @@ export const useLoginMutation = () => {
       await history.push("/home");
 
       return data;
+    },
+    {
+      onError: async (error) => {
+        if (error.status === 419) {
+          await refetch();
+        }
+      },
     }
   );
 };

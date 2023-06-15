@@ -1,19 +1,17 @@
 import { FC, useEffect } from "react";
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
   IonIcon,
   IonText,
   IonRefresher,
   IonRefresherContent,
   RefresherEventDetail,
   IonSpinner,
+  IonList,
+  IonItem,
+  IonLabel,
 } from "@ionic/react";
-import { busOutline } from "ionicons/icons";
+import { busOutline, playOutline } from "ionicons/icons";
 import { useGetTripsQuery } from "../hooks/useGetTripsQuery";
 import { Geolocation } from "@capacitor/geolocation";
 import { format } from "date-fns";
@@ -82,42 +80,42 @@ const Driver: FC = () => {
         </div>
       ) : null}
       {trips.length > 0 && !isLoadingTrips ? (
-        <>
+        <IonList>
           {trips.map((trip) => (
-            <IonCard key={trip.id}>
-              <IonCardHeader>
-                <IonCardTitle>{trip.itinerary.school.name}</IonCardTitle>
-                <IonCardSubtitle>
-                  {trip.round ? "Volta" : "Ida"}
-                  {" - "}
+            <IonItem>
+              <IonLabel>
+                <h3>
+                  {trip.itinerary.school.name} - {trip.round ? "Volta" : "Ida"}
+                </h3>
+                <p>{trip.itinerary.school.address.description}</p>
+                <p>
                   {trip.finishedAt
                     ? `Finalizada às ${format(trip.finishedAt, "H:mm")}`
                     : `Previsão de ${
                         trip.round ? "saída" : "chegada"
                       } às ${format(trip.arriveAt, "H:mm")}`}
-                </IonCardSubtitle>
-              </IonCardHeader>
-              <IonCardContent>
-                {trip.itinerary.school.address.description}
-              </IonCardContent>
+                </p>
+              </IonLabel>
               {!trip.finishedAt && (
-                <div
-                  className="ion-padding-bottom ion-padding-horizontal"
-                  style={{ display: "flex", justifyContent: "flex-end" }}
+                <IonButton
+                  slot="end"
+                  size="small"
+                  shape="round"
+                  color={trip.startedAt ? "success" : "primary"}
+                  routerLink={`/trip/${trip.id}`}
+                  style={{ height: "30px" }}
                 >
-                  <IonButton
-                    size="small"
-                    shape="round"
-                    color={trip.startedAt ? "success" : "primary"}
-                    routerLink={`/trip/${trip.id}`}
-                  >
-                    {trip.startedAt ? "Continuar" : "Começar"}
-                  </IonButton>
-                </div>
+                  <IonIcon
+                    icon={playOutline}
+                    slot="start"
+                    style={{ paddingLeft: "5px" }}
+                  />
+                  {trip.startedAt ? "Continuar" : "Começar"}
+                </IonButton>
               )}
-            </IonCard>
+            </IonItem>
           ))}
-        </>
+        </IonList>
       ) : null}
     </div>
   );

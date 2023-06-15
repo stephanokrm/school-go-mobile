@@ -1,9 +1,6 @@
 import { FC } from "react";
 import {
   IonButton,
-  IonCard,
-  IonCardHeader,
-  IonCardSubtitle,
   IonIcon,
   IonItem,
   IonLabel,
@@ -15,7 +12,12 @@ import {
   IonText,
   RefresherEventDetail,
 } from "@ionic/react";
-import { busOutline } from "ionicons/icons";
+import {
+  busOutline,
+  eyeOutline,
+  checkmarkOutline,
+  closeOutline,
+} from "ionicons/icons";
 import { useStudentsQuery } from "../hooks/useStudentsQuery";
 import { useTripStudentPresentMutation } from "../hooks/useTripStudentPresentMutation";
 import { useTripStudentAbsentMutation } from "../hooks/useTripStudentAbsentMutation";
@@ -76,87 +78,104 @@ const Responsible: FC = () => {
       {students.length > 0 && !isLoadingStudents ? (
         <>
           {students.map((student) => (
-            <>
-              <IonList lines="none">
-                <IonListHeader>
-                  <IonLabel className="ion-no-margin">
-                    {student.firstName} {student.lastName}
-                  </IonLabel>
-                </IonListHeader>
-                <IonItem>
-                  <IonLabel>
-                    <h3>{student.school.name}</h3>
-                    <p>{student.school.address.description}</p>
-                  </IonLabel>
-                </IonItem>
-              </IonList>
+            <IonList>
+              <IonListHeader>
+                <IonLabel className="ion-no-margin">
+                  {student.firstName} {student.lastName}
+                </IonLabel>
+              </IonListHeader>
+              <IonItem>
+                <IonLabel>
+                  <h3>{student.school.name}</h3>
+                  <p>{student.school.address.description}</p>
+                </IonLabel>
+              </IonItem>
               {student.trips?.map((trip) => {
                 const studentHasNotCompletedTrip = trip.round
                   ? !trip.pivot?.disembarkedAt
                   : !trip.pivot?.embarkedAt;
 
                 return (
-                  <IonCard key={trip.id}>
-                    <IonCardHeader>
-                      <IonCardSubtitle>
-                        {trip.round ? "Volta" : "Ida"}
-                        {" - "}
+                  <IonItem>
+                    <IonLabel>
+                      <h3>{trip.round ? "Volta" : "Ida"}</h3>
+                      <p>
                         {trip.finishedAt
                           ? `Finalizada às ${format(trip.finishedAt, "H:mm")}`
                           : `Previsão de ${
                               trip.round ? "saída" : "chegada"
                             } às ${format(trip.arriveAt, "H:mm")}`}
-                      </IonCardSubtitle>
-                    </IonCardHeader>
-                    {!trip.finishedAt ? (
-                      <div
-                        className="ion-padding-bottom ion-padding-horizontal"
-                        style={{ display: "flex", justifyContent: "end" }}
-                      >
-                        {studentHasNotCompletedTrip ? (
-                          trip.pivot?.absent ? (
-                            <IonButton
-                              size="small"
-                              shape="round"
-                              onClick={() => present({ trip, student })}
-                            >
-                              {isMutatingPresent ? (
-                                <IonSpinner name="dots" />
-                              ) : (
-                                "Irá Comparecer"
-                              )}
-                            </IonButton>
+                      </p>
+                    </IonLabel>
+                    {studentHasNotCompletedTrip ? (
+                      trip.pivot?.absent ? (
+                        <IonButton
+                          slot="end"
+                          size="small"
+                          shape="round"
+                          style={{ height: "30px" }}
+                          onClick={() => present({ trip, student })}
+                        >
+                          {isMutatingPresent ? (
+                            <IonSpinner name="dots" />
                           ) : (
-                            <IonButton
-                              size="small"
-                              shape="round"
-                              color="danger"
-                              onClick={() => absent({ trip, student })}
-                            >
-                              {isMutatingAbsent ? (
-                                <IonSpinner name="dots" />
-                              ) : (
-                                "Não Irá Comparecer"
-                              )}
-                            </IonButton>
-                          )
-                        ) : null}
-                        {trip.startedAt && !trip.pivot?.absent && (
-                          <IonButton
-                            size="small"
-                            shape="round"
-                            color="success"
-                            routerLink={`/student/${student.id}/trip/${trip.id}`}
-                          >
-                            Acompanhar
-                          </IonButton>
-                        )}
-                      </div>
+                            <>
+                              <IonIcon
+                                icon={checkmarkOutline}
+                                slot="start"
+                                style={{ paddingLeft: "5px" }}
+                              />
+                              Presente
+                            </>
+                          )}
+                        </IonButton>
+                      ) : (
+                        <IonButton
+                          slot="end"
+                          size="small"
+                          shape="round"
+                          color="danger"
+                          style={{ height: "30px" }}
+                          onClick={() => absent({ trip, student })}
+                        >
+                          {isMutatingAbsent ? (
+                            <IonSpinner name="dots" />
+                          ) : (
+                            <>
+                              <IonIcon
+                                icon={closeOutline}
+                                slot="start"
+                                style={{ paddingLeft: "5px" }}
+                              />
+                              Ausente
+                            </>
+                          )}
+                        </IonButton>
+                      )
                     ) : null}
-                  </IonCard>
+                    {trip.startedAt &&
+                      !trip.finishedAt &&
+                      !trip.pivot?.absent && (
+                        <IonButton
+                          slot="end"
+                          size="small"
+                          shape="round"
+                          color="success"
+                          style={{ height: "30px" }}
+                          routerLink={`/student/${student.id}/trip/${trip.id}`}
+                        >
+                          <IonIcon
+                            icon={eyeOutline}
+                            slot="start"
+                            style={{ paddingLeft: "5px" }}
+                          />
+                          Acompanhar
+                        </IonButton>
+                      )}
+                  </IonItem>
                 );
               })}
-            </>
+            </IonList>
           ))}
         </>
       ) : null}

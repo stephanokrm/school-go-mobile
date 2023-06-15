@@ -1,11 +1,13 @@
 import * as yup from "yup";
-import { FC, useEffect } from "react";
+import React, { FC, useEffect } from "react";
 import {
   IonButton,
   IonContent,
+  IonImg,
   IonItem,
   IonList,
   IonPage,
+  IonSpinner,
   IonText,
   useIonToast,
 } from "@ionic/react";
@@ -26,7 +28,7 @@ export type LoginForm = yup.InferType<typeof loginSchema>;
 
 export const Login: FC = () => {
   const [present] = useIonToast();
-  const { mutate, error } = useLoginMutation();
+  const { mutate, error, isLoading } = useLoginMutation();
   const { onError } = useOnError();
   const { control, handleSubmit } = useForm<LoginForm>({
     resolver: yupResolver(loginSchema),
@@ -50,6 +52,12 @@ export const Login: FC = () => {
         <IonText className="ion-text-center">
           <h1>SchoolGo</h1>
         </IonText>
+        <div
+          className="ion-padding-vertical"
+          style={{ display: "flex", justifyContent: "center" }}
+        >
+          <IonImg src="logo.png" alt="Logo" />
+        </div>
         <form onSubmit={onSubmit}>
           <IonList lines="none">
             <IonItem>
@@ -72,7 +80,7 @@ export const Login: FC = () => {
             </IonItem>
             <div className="ion-padding">
               <IonButton expand="block" type="submit">
-                Entrar
+                {isLoading ? <IonSpinner name="dots" /> : "Entrar"}
               </IonButton>
             </div>
           </IonList>
