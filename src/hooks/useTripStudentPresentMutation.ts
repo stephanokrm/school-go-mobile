@@ -24,7 +24,7 @@ export const useTripStudentPresentMutation = () => {
         }
       );
 
-      await queryClient.invalidateQueries({ queryKey: ["Students"] });
+      await queryClient.invalidateQueries({ queryKey: ["TripById", trip.id] });
 
       return data;
     }
