@@ -9,9 +9,19 @@ import {
   IonBackButton,
   useIonViewDidEnter,
   useIonViewWillLeave,
-  IonFooter,
   IonSpinner,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonIcon,
+  IonModal,
+  IonText,
 } from "@ionic/react";
+import {
+  flagOutline,
+  checkmarkCircleOutline,
+  busOutline,
+} from "ionicons/icons";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation } from "@capacitor/geolocation";
 import "./Trip.css";
@@ -31,7 +41,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   const zoomRef = useRef<number>(15);
   const modal = useRef<HTMLIonModalElement>(null);
   const [isGoogleMapCreated, setIsGoogleMapCreated] = useState(false);
-
+  const modalRef = useRef<HTMLIonModalElement>(null);
   const { height } = useWindowDimensions();
   const { data: trip, isLoading: isLoadingTrip } = useTripByIdQuery(
     match.params.trip,
@@ -47,6 +57,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   const studentHasCompletedTrip = round
     ? !!student?.pivot?.disembarkedAt
     : !!student?.pivot?.embarkedAt;
+  const studentHasStartedTrip = !!student?.pivot?.embarkedAt;
   const school = trip?.itinerary?.school;
   const originAddress = round ? school?.address : student?.address;
   const destinationAddress = round ? student?.address : school?.address;
@@ -151,7 +162,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
 
       await googleMapRef.current.setCamera({
         animate: true,
-        zoom: 25 / area,
+        zoom: 75 / area,
         coordinate: {
           lat: center.lat(),
           lng: center.lng(),
@@ -181,7 +192,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
         left: 0,
         right: 0,
         top: 0,
-        bottom: 0,
+        bottom: height * 0.25,
       });
     };
 
@@ -275,7 +286,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
             {isLoadingTrip ? (
               <IonSpinner name="dots" />
             ) : (
-              `${student?.firstName} ${student?.lastName}`
+              `Viagem de ${student?.firstName}`
             )}
           </IonTitle>
         </IonToolbar>
@@ -289,18 +300,63 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
             height: "100vh",
           }}
         />
-      </IonContent>
-      <IonFooter translucent>
-        <IonToolbar>
-          <IonTitle>
+        <IonModal
+          backdropBreakpoint={0.5}
+          backdropDismiss={false}
+          breakpoints={[0.25, 0.5, 0.75]}
+          initialBreakpoint={0.25}
+          isOpen
+          ref={modalRef}
+        >
+          <IonContent className="ion-padding">
             {isLoadingTrip ? (
-              <IonSpinner name="dots" />
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <IonSpinner name="dots" />
+              </div>
             ) : (
-              `${round ? "Volta" : "Ida"} - ${school?.name}`
+              <div>
+                <div>
+                  <IonText>
+                    <h5>
+                      {studentHasStartedTrip
+                        ? `${student?.firstName} está à caminho`
+                        : `${student?.firstName} está aguardando o embarque`}
+                    </h5>
+                  </IonText>
+                </div>
+                <div>
+                  <IonList>
+                    <IonItem>
+                      <IonIcon icon={checkmarkCircleOutline} slot="start" />
+                      <IonLabel>
+                        <p>Endereço de Origem</p>
+                        <h3>{originAddress?.description}</h3>
+                      </IonLabel>
+                    </IonItem>
+                    <IonItem lines="full">
+                      <IonIcon icon={flagOutline} slot="start" />
+                      <IonLabel>
+                        <p>Endereço de Destino</p>
+                        <h3>{destinationAddress?.description}</h3>
+                      </IonLabel>
+                    </IonItem>
+                    <IonItem>
+                      <IonIcon icon={busOutline} slot="start" />
+                      <IonLabel>
+                        <p>Motorista</p>
+                        <h3>
+                          {trip?.itinerary.driver.user.firstName}{" "}
+                          {trip?.itinerary.driver.user.lastName}
+                        </h3>
+                      </IonLabel>
+                    </IonItem>
+                  </IonList>
+                </div>
+              </div>
             )}
-          </IonTitle>
-        </IonToolbar>
-      </IonFooter>
+          </IonContent>
+        </IonModal>
+      </IonContent>
     </IonPage>
   );
 };
