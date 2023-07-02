@@ -46,7 +46,7 @@ const StudentTrip: FC<TripProps> = ({ match }) => {
   const { data: trip, isLoading: isLoadingTrip } = useTripByIdQuery(
     match.params.trip,
     {
-      refetchInterval: 5000,
+      refetchInterval: 1000,
     }
   );
 
